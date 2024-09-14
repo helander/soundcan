@@ -1,0 +1,128 @@
+<html>
+<head>
+<style>
+.drawbar{position:fixed; top:0px; left:0px; width:70px; height:350px; z-index:10; outline: dashed red 0px;}
+</style>
+
+
+</head>
+<body>
+  <img id="drawbar" class="drawbar" src="img/drawbar.svg" data-level="5"  ></img>
+        <script type="module">
+var knownLevel = undefined;
+var drawbar = document.getElementById("drawbar");
+const limit = -238;
+const speedLimit = 7;
+
+	   async function synthSend(command) {
+                          const url = "http://"+pageUrl.hostname+":2729/" + command;
+                          const response = await fetch(url);
+                          const sResponse = await response.text();
+                          //console.log('cmd',url,sResponse.length,"["+sResponse+"]",response.statusText,sResponse.charCodeAt(0));
+                          return sResponse;
+            }
+
+            /* Input parameters */
+
+            const pageUrl = new URL(window.location.href);
+
+            let run = true;
+            const min = Number(pageUrl.searchParams.get("min"));
+            const max = Number(pageUrl.searchParams.get("max"));
+            var factor = Number(pageUrl.searchParams.get("factor"));
+            var name = pageUrl.searchParams.get("control");
+            var title = pageUrl.searchParams.get("title");
+            if (factor == 0) {factor = 1;}
+            if (max == 0) {alert('must provide a value for max'); run = false;}
+            if (name == null) {alert('must provide a value for control'); run = false;}
+            //if (title == null) {alert('must provide a value for title'); run = false;}
+	    //console.log(factor,max,name,title,run);
+
+            if (run) {
+                /* Define slider for control */
+                //const labelElement = document.getElementById("label");
+                //const sliderElement = document.getElementById("slider");
+                //labelElement.innerHTML = title;
+                //sliderElement.max = max.toString();
+                //sliderElement.min = min.toString();
+                //sliderElement.oninput = async function () {
+                //    const sliderValue = (factor*Number(this.value));
+		//    console.log(name+"="+sliderValue);
+                //    await synthSend("control/"+name+"/"+ sliderValue);
+                //};
+
+                const currentSetting = await synthSend("control/"+name);
+                const currentValue = Number(currentSetting.split('|')[1].split('=')[1]);
+                knownLevel = Math.round(8*(127-currentValue)/127);
+                const initialY = Math.round(limit*(1-(knownLevel/8)));
+                //const initialY = -100;
+		console.log('current',name,currentSetting,currentValue,knownLevel,initialY); 
+                drawbar.style.top  = initialY + 'px';
+            }
+
+
+
+/*MOUSE-LISTENERS---------------------------------------------*/
+var isDown=false;
+drawbar.addEventListener('mousedown',function(){isDown=true;},true);
+document.addEventListener('mouseup',function(){isDown=false;},true);
+document.addEventListener('mousemove',async function(e) {
+  e.preventDefault();
+  if (isDown) {
+    let newY = drawbar.offsetTop + e.movementY;
+    if (newY > 0) { newY = 0;}
+    if (newY < limit) { newY = limit;}
+    drawbar.style.top  = newY + 'px';
+    let level = Math.round(8*(limit-newY)/limit);
+    if (knownLevel !== level)  {
+      console.log('level='+level);
+      const sliderValue = Math.round(127-127*level/8);
+      console.log(name+"="+sliderValue);
+      await synthSend("control/"+name+"/"+ sliderValue);
+    }
+    knownLevel = level;
+  }
+},true);
+
+/*TOUCH-LISTENERS---------------------------------------------*/
+var startX=0, startY=0;
+drawbar.addEventListener('touchstart',function(e) {
+  startX = e.changedTouches[0].pageX;
+  startY = e.changedTouches[0].pageY;
+});
+
+drawbar.addEventListener('touchmove', async function(e) {
+  e.preventDefault();
+  //var deltaX = e.changedTouches[0].pageX - startX;
+  var deltaY = e.changedTouches[0].pageY - startY;
+  if (deltaY < 0) {
+      if (deltaY < 0-speedLimit) deltaY = 0-speedLimit;
+  } else {
+      if (deltaY > speedLimit) deltaY = speedLimit;
+  }
+  let newY = drawbar.offsetTop + deltaY;
+  if (newY > 0) { newY = 0;}
+  if (newY < limit) { newY = limit;}
+  drawbar.style.top  = newY + 'px';
+  let level = Math.round(8*(limit-newY)/limit);
+  if (knownLevel !== level)  {
+    console.log('level='+level);
+    const sliderValue = Math.round(127-127*level/8);
+    console.log(name+"="+sliderValue);
+    await synthSend("control/"+name+"/"+ sliderValue);
+  }
+  knownLevel = level;
+  //reset start-position for next frame/iteration
+  startY = startY + deltaY /*e.changedTouches[0].pageY*/ ;
+});
+
+
+
+
+        </script>
+
+
+
+
+</body>
+</html>

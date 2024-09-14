@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+iframe {
+  border: 0;
+  padding: 0;
+}
+</style>
+</head>
+<body>
+​
+​
+  <div id="master" style="display:grid;grid-template-columns: 113px 590px;grid-template-rows: 251px 251px;border:0;padding:0;">
+      <div id="volume" style="grid-column:1;grid-row-start:1;grid-row-end:2;background-color: white;">
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.gain&factor=0.1&max=10" width="110px" height="500px">Volume</iframe>
+      </div>
+      <div id="reverb" style="grid-column:2;grid-row:1;background-color:white;">
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.reverb.active&max=1" width="110px" height="250px">Reverb active</iframe>
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.reverb.room-size&factor=0.01&max=100" width="110px" height="250px">Reverb size</iframe>
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.reverb.damp&factor=0.01&max=100" width="110px" height="250px">Reverb damp</iframe>
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.reverb.width&max=100" width="110px" height="250px">Reverb width</iframe>
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.reverb.level&factor=0.01&max=100" width="110px" height="250px">Reverb level</iframe>
+      </div>
+      <div id="chorus" style="grid-column:2;grid-row:2;background-color: white">
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.chorus.active&max=1" width="110px" height="250px">Chorus active</iframe>
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.chorus.nr&max=99" width="110px" height="250px">Chorus number</iframe>
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.chorus.speed&factor=0.1&max=50" width="110px" height="250px">Chorus speed</iframe>
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.chorus.depth&max=256" width="110px" height="250px">Chorus depth</iframe>
+          <iframe src="/settingslider.html?endpoint=fluidsynth:9800&setting=synth.chorus.level&factor=0.1&max=100" width="110px" height="250px">Chorus level</iframe>
+      </div>
+  </div>
+
+</body>
+</html>

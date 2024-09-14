@@ -1,0 +1,67 @@
+<html>
+<body>
+  <div id="controls"></div>
+  <script type="module">
+           const pageUrl = new URL(window.location.href);
+           const serviceUrl = "http://"+pageUrl.hostname+":7893/control";
+           const response = await fetch(serviceUrl);
+           const controls = await response.json();
+           const controlsContainer = document.getElementById("controls");
+           console.log('controls',serviceUrl,response.statusText,controls);
+           for (let i = 0; i < controls.length; i = i + 1) {
+             if (controls[i].enumeration) {
+               const control = controls[i];
+               const selector = document.createElement("select"); 
+               selector.setAttribute("symbol", control.symbol);
+               selector.setAttribute("index", control.index);
+               for (let j = 0; j < control.points.length; j = j + 1) {
+                    const point = control.points[j];
+                    const option = document.createElement("option");
+                    option.text = point.label;
+                    option.value = point.value;
+                    if (control.value == point.value) option.selected = true;
+                    console.log('xxx',control.value,point.value,control.value==point.value);
+                    selector.add(option);
+               }
+
+               controlsContainer.appendChild(selector);
+
+
+                selector.addEventListener("change", async (event) => {
+                    console.log(event.target.getAttribute("index")+"|"+event.target.getAttribute("symbol")+"="+event.target.value);
+                    await fetch(serviceUrl+"/"+event.target.getAttribute("index")+"/"+event.target.value);
+                });
+
+
+             } else {
+               const controlElement = document.createElement("input");
+               controlElement.setAttribute("type", "range");
+               controlElement.setAttribute("max", controls[i].max);
+               controlElement.setAttribute("min", controls[i].min);
+               if (!controls[i].integer) {
+                 controlElement.setAttribute("step", 0.01);
+               }           
+               controlElement.setAttribute("symbol", controls[i].symbol);
+               controlElement.setAttribute("index", controls[i].index);
+               controlElement.oninput = async function () {
+                    const controlValue = this.value;
+                    console.log(this.getAttribute("index")+"|"+this.getAttribute("symbol")+"="+controlValue);
+                    await fetch(serviceUrl+"/"+this.getAttribute("index")+"/"+controlValue);
+               };
+
+               controlsContainer.appendChild(controlElement);
+
+             }
+
+             const labelElement = document.createElement("label");
+             labelElement.innerHTML = controls[i].symbol;
+             controlsContainer.appendChild(labelElement);
+             controlsContainer.appendChild(document.createElement("br"));
+
+
+
+
+           }
+  </script>
+</body>
+</html>

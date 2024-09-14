@@ -1,0 +1,222 @@
+<html>
+    <head>
+        <style>
+
+            .sliderticks {
+              display: flex;
+              justify-content: space-between;
+            }
+
+            .sliderticks span {
+              display: flex;
+              justify-content: center;
+              width: 2px;
+              height: 15px;
+              background: #d3d3d3;
+            }
+
+
+
+            .vertical-slider {
+              transform: rotate(-90deg) translate(-200px, 0);
+            }
+
+            input[type="range"]:hover {
+              opacity: 1;
+            }
+
+            input[type="range"] {
+              -webkit-appearance: none;
+              padding-bottom: 10px;
+              width: 400px;
+              height: 60px
+              cursor: pointer;
+              outline: none;
+            }
+
+            input[type="range"]::-webkit-slider-runnable-track {
+              height: 15px;
+              background: #ccc;
+              border-radius: 16px;
+            }
+
+            input[type="range"]::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              width: 50px;
+              height: 30px;
+              background-image: url('/img/thumb.svg');
+              background-size: cover;
+              margin-top: -7px;
+            }
+
+            .channel-container {
+              display: flex;
+              flex-flow: column;
+              justify-content: space-around;
+              height: 100%;
+            }
+
+            .volume-container {
+              display: flex;
+              flex-flow: column;
+              flex-grow: 100;
+              align-items: center;
+            }
+
+
+            .fonts {
+              font-size: 11px;
+              flex-grow: 0;
+              color: black;
+            }
+
+            .instruments {
+              font-size: 11px;
+              flex-grow: 0;
+              color: black;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="channel-container">
+            <div class="volume-container">
+                <div class="vertical-slider">
+                    <input id="slider.channel.volume" type="range" min="0" max="127" value="0" ">
+                    <div class="sliderticks">
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <select name="fonts" id="fonts" class="fonts">
+                fonts
+            </select>
+
+            <select name="instruments" id="instruments" class="instruments"></select>
+        </div>
+
+        <script type="module">
+            const url = new URL(window.location.href);
+            var fsCmdUrl = url.protocol + "//" + url.hostname + ":9900/command/";
+            async function fluidsynthSend(command) {
+                const response = await fetch(fsCmdUrl + command );
+                const sResponse = await response.text();
+      console.log(command,sResponse);
+                return sResponse;
+            }
+
+            async function getChannelInstrument(chan) {
+                let result = {};
+                let ok = false;
+		let channels;
+		while (! ok) {
+		   const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+                   channels = await fluidsynthSend("channels -verbose");
+                   //console.log('channels',channels);
+		   ok = channels.length > 0;
+		   if (! ok) await sleep(1000);
+		}
+                const channelrow = channels.split("\n")[chan];
+                const row = channelrow.split(",");
+                result.name = row[4].slice(1);
+                result.sfont = Number(row[1].split(" ")[2]);
+                result.bank = Number(row[2].split(" ")[2]);
+                result.preset = Number(row[3].split(" ")[2]);
+                result.channel = chan;
+                //console.log('channelInstrument',result);
+                return result;
+            }
+
+            async function instruments() {
+                const instrument = await getChannelInstrument(Number(sChannel));
+                const instruments = await fluidsynthSend( "inst%20" + instrument.sfont);
+                const list = instruments.split("\n");
+console.log('new instrument list');
+                const instrumentSelector = document.getElementById("instruments");
+                instrumentSelector.length = 0;
+                for (let i = 0; i < list.length - 1; i++) {
+                    const option = document.createElement("option");
+                    option.text = list[i].slice(8);
+                    const name = list[i].slice(8);
+                    option.value = list[i].split(" ")[0];
+                    const bank_preset = list[i].split(" ")[0].split("-");
+                    const bank = Number(bank_preset[0]);
+                    const preset = Number(bank_preset[1]);
+                    if (bank == instrument.bank && preset == instrument.preset) {
+                        //console.log('selected instr',instrument.channel,instrument.name,name);
+                        //console.log('bank/preset',instrument.bank,instrument.preset,bank,preset);
+                        option.selected = true;
+                    }
+                    instrumentSelector.add(option);
+                }
+
+                instrumentSelector.addEventListener("change", async (event) => {
+                    //console.log('INSTRUMENT selected',event.target.value);
+                    const inst = event.target.value.split(" ")[0].split("-");
+                    //console.log('instr',inst);
+                    const bank = Number(inst[0]).toString();
+                    const preset = Number(inst[1]).toString();
+                    const instrument = await getChannelInstrument(Number(sChannel));
+                    await fluidsynthSend("select%20" + sChannel + "%20" + instrument.sfont + "%20" + bank + "%20" + preset);
+                });
+            }
+
+            async function fonts() {
+                const instrument = await getChannelInstrument(Number(sChannel));
+
+                const fonts = await fluidsynthSend("fonts");
+                const list = fonts.split("\n");
+
+                const fontSelector = document.getElementById("fonts");
+                for (let i = 1; i < list.length - 1; i++) {
+                    const option = document.createElement("option");
+                    const parts = list[i].split("/");
+                    option.text = parts[parts.length - 1];
+                    option.value = parts[0].trim();
+                    if (parts[0].trim() == instrument.sfont) {
+                        option.selected = true;
+                    }
+                    fontSelector.add(option);
+                }
+
+                fontSelector.addEventListener("change", async (event) => {
+                    const font = event.target.value.split(" ")[0];
+                    console.log('selected font',font,event.target.value);
+                    await fluidsynthSend("select%20" + sChannel + "%20" + font + "%20" + "0" + "%20" + "0");
+                    await instruments();
+                });
+            }
+
+            /* Input parameters */
+//            var endpoint = "fluidsynth:9800";
+            var channel = 0;
+
+//            if (url.searchParams.get("endpoint") != null) {
+//                endpoint = url.searchParams.get("endpoint");
+//            }
+            if (url.searchParams.get("channel") != null) {
+                channel = Number(url.searchParams.get("channel"));
+            }
+            const sChannel = channel.toString();
+
+            /* Define volume slider for channel */
+            const sliderElement = document.getElementById("slider.channel.volume");
+            sliderElement.oninput = async function () {
+                await fluidsynthSend("cc%20" + sChannel + "%20" + "7" + "%20" + Number(this.value));
+            };
+
+            await fluidsynthSend("cc%20" + sChannel + "%20" + "7" + "%20" + Number(sliderElement.value));
+
+            /* Define soundfont selector for channel */
+            await fonts();
+
+            /* Define instrument selector for channel */
+            await instruments();
+
+        </script>
+    </body>
+</html>
+

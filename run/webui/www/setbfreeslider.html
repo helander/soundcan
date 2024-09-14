@@ -1,0 +1,142 @@
+<html>
+    <head>
+        <style>
+
+            .sliderticks {
+              display: flex;
+              justify-content: space-between;
+            }
+
+            .sliderticks span {
+              display: flex;
+              justify-content: center;
+              width: 2px;
+              height: 15px;
+              background: #d3d3d3;
+            }
+
+            #label {
+               font-size: 13px;
+            }
+
+            .vertical-slider {
+              transform: rotate(-90deg) translate(-200px, 0);
+            }
+
+            input[type="range"]:hover {
+              opacity: 1;
+            }
+
+	    input[type="range"] {
+              -webkit-appearance: none;
+              padding-bottom: 10px;
+              width: 400px;
+              height: 60px
+              cursor: pointer;
+              outline: none;
+            }
+
+            input[type="range"]::-webkit-slider-runnable-track {
+              height: 15px;
+              background: #ccc;
+              border-radius: 16px;
+            }
+
+            input[type="range"]::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              width: 50px;
+              height: 30px;
+              background-image: url('/img/thumb.svg');
+              background-size: cover;
+              margin-top: -7px;
+            }
+
+            .slider-container {
+              display: flex;
+              flex-flow: column;
+              flex-grow: 100;
+              align-items: center;
+            }
+
+
+@media (max-height: 300px) {
+
+            .vertical-slider {
+              transform: rotate(-90deg) translate(-85px, 0);
+            }
+
+            input[type="range"] {
+              -webkit-appearance: none;
+              padding-bottom: 10px;
+              width: 200px;
+              height: 60px
+              cursor: pointer;
+              outline: none;
+            }
+
+
+}
+
+
+        </style>
+    </head>
+    <body>
+            <div class="slider-container">
+                <label id="label"></label>
+                <div class="vertical-slider">
+                    <input id="slider" type="range" >
+                    <div class="sliderticks">
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                    </div>
+                </div>
+
+        </div>
+
+        <script type="module">
+	   async function synthSend(command) {
+                          const url = "http://"+pageUrl.hostname+":2729/" + command;
+                          const response = await fetch(url);
+                          const sResponse = await response.text();
+                          //console.log('cmd',url,sResponse.length,"["+sResponse+"]",response.statusText,sResponse.charCodeAt(0));
+                          return sResponse;
+            }
+
+            /* Input parameters */
+
+            const pageUrl = new URL(window.location.href);
+
+            let run = true;
+            const min = Number(pageUrl.searchParams.get("min"));
+            const max = Number(pageUrl.searchParams.get("max"));
+            var factor = Number(pageUrl.searchParams.get("factor"));
+            var name = pageUrl.searchParams.get("control");
+            var title = pageUrl.searchParams.get("title");
+            if (factor == 0) {factor = 1;}
+            if (max == 0) {alert('must provide a value for max'); run = false;}
+            if (name == null) {alert('must provide a value for control'); run = false;}
+
+            if (run) {
+                /* Define slider for control */
+                const labelElement = document.getElementById("label");
+                const sliderElement = document.getElementById("slider");
+                labelElement.innerHTML = title;
+                sliderElement.max = max.toString();
+                sliderElement.min = min.toString();
+                sliderElement.oninput = async function () {
+                    const sliderValue = (factor*Number(this.value));
+		    //console.log(name+"="+sliderValue);
+                    await synthSend("control/"+name+"/"+ sliderValue);
+                };
+
+                const currentSetting = await synthSend("control/"+name);
+                const currentValue = Number(currentSetting.split('|')[1].split('=')[1]);
+                sliderElement.value = Math.round(currentValue/factor);
+		//console.log('current',name,currentSetting,currentValue,sliderElement.value); 
+            }
+        </script>
+    </body>
+</html>
+

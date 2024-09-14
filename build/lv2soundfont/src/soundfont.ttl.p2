@@ -1,0 +1,15 @@
+    ] ;
+
+    mod:brand "FluidGM" ;
+    mod:label "xLABELx" ;
+
+    doap:name "xLABELx" ;
+    doap:license "LGPL" ;
+
+    doap:maintainer [
+        foaf:name "falkTX" ;
+        foaf:homepage <https://github.com/falkTX/FluidPlug> ;
+    ] ;
+
+    lv2:minorVersion 2 ;
+    lv2:microVersion 0 .

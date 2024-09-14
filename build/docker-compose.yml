@@ -1,0 +1,12 @@
+name: sqimage
+
+services:
+
+  jalv-http:
+    build: jalv-http
+
+  lv2soundfont:
+    build: lv2soundfont
+
+  setbfree:
+    build: setbfree

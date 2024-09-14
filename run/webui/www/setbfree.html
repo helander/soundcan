@@ -1,0 +1,169 @@
+<html>
+    <head>
+        <style>
+
+            .sliderticks {
+              display: flex;
+              justify-content: space-between;
+            }
+
+            .sliderticks span {
+              display: flex;
+              justify-content: center;
+              width: 2px;
+              height: 15px;
+              background: #d3d3d3;
+            }
+
+            .vertical-slider {
+              transform: rotate(-90deg) translate(-200px, 0);
+            }
+
+            input[type="range"]:hover {
+              opacity: 1;
+            }
+
+            input[type="range"] {
+              -webkit-appearance: none;
+              padding-bottom: 10px;
+              width: 400px;
+              height: 60px
+              cursor: pointer;
+              outline: none;
+            }
+
+            input[type="range"]::-webkit-slider-runnable-track {
+              height: 15px;
+              background: #ccc;
+              border-radius: 16px;
+            }
+
+            input[type="range"]::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              width: 50px;
+              height: 30px;
+              background-image: url('/img/thumb.svg');
+              background-size: cover;
+              margin-top: -7px;
+            }
+
+            .channel-container {
+              display: flex;
+              flex-flow: column;
+              justify-content: space-around;
+              height: 100%;
+            }
+
+            .volume-container {
+              display: flex;
+              flex-flow: column;
+              flex-grow: 100;
+              align-items: center;
+            }
+
+
+            .setbfree {
+              font-size: 11px;
+              flex-grow: 0;
+              color: black;
+            }
+
+            .instruments {
+              font-size: 11px;
+              flex-grow: 0;
+              color: black;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="channel-container">
+            <div class="volume-container">
+                <div class="vertical-slider">
+                    <input id="slider.swell" type="range" min="0" max="127" >
+                    <div class="sliderticks">
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                        <span></span> <span></span> <span></span> <span></span> <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <select name="setbfree" id="setbfree" class="setbfree">
+              <option selected>Hammond B3</option>
+            </select>
+            <select name="instruments" id="instruments" class="instruments"></select>
+        </div>
+
+        <script type="module">
+            async function synthSend(port, command) {
+                          const url = "http://"+pageUrl.hostname+":"+sFsport+"/" + command;
+                          const response = await fetch(url);
+                          const sResponse = await response.text();
+                          //console.log('cmd',url,sResponse);
+			  return sResponse;
+            }
+
+            async function getChannelInstrument() {
+                let result = {};
+                const response = await synthSend(sFsport, "program");
+                const list = response.split("\n");
+                const row = list[0].split("|");
+                result.name = row[1];
+                result.preset = Number(row[0]);
+                //console.log('channelInstrument',result);
+                return result;
+            }
+
+            async function instruments() {
+                const instrument = await getChannelInstrument();
+                const instruments = await synthSend(sFsport, "programs");
+                const list = instruments.split("\n");
+                const instrumentSelector = document.getElementById("instruments");
+                instrumentSelector.length = 0;
+                for (let i = 0; i < list.length - 1; i++) {
+                    const option = document.createElement("option");
+                    const row = list[i].split('|');
+                    option.text = row[1];
+                    const preset = Number(row[0]);
+                    option.value = row[0];
+                    if (preset == instrument.preset) {
+                        option.selected = true;
+                    }
+                    instrumentSelector.add(option);
+                }
+
+                instrumentSelector.addEventListener("change", async (event) => {
+                    //console.log('INSTRUMENT selected',event.target.value);
+                    const preset = event.target.value;
+                    //const instrument = await getChannelInstrument(Number(sChannel));
+                    await synthSend(sFsport, "program/" + preset);
+                });
+            }
+
+            /* Input parameters */
+            var fsport = 2729;
+
+            const pageUrl = new URL(window.location.href);
+            if (pageUrl.searchParams.get("fsport") != null) {
+                fsport = Number(pageUrl.searchParams.get("fsport"));
+            }
+            const sFsport = fsport.toString();
+
+            /* Define volume slider for channel */
+            const sliderElement = document.getElementById("slider.swell");
+            const response = await synthSend(sFsport, "control/swellpedal1");
+            const list = response.split("\n");
+            const swell = Number(list[0].split('|')[1].split('=')[1]);
+            sliderElement.value = swell.toString();
+            sliderElement.oninput = async function () {
+                await synthSend(sFsport, "control/swellpedal1/" + this.value);
+            };
+
+            /* Define instrument selector for channel */
+            await instruments();
+        </script>
+    </body>
+</html>
+
+
