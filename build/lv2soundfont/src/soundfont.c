@@ -71,7 +71,7 @@ typedef enum {
     kPortProgram,
 } FluidSynthPluginPorts;
 
-LV2_Handle lv2_instantiate(const struct LV2_Descriptor* descriptor, double sampleRate, const char* bundlePath, const LV2_Feature* const* features)
+static LV2_Handle lv2_instantiate(const struct LV2_Descriptor* descriptor, double sampleRate, const char* bundlePath, const LV2_Feature* const* features)
 {
     const LV2_URID_Map* uridMap = NULL;
 
@@ -220,7 +220,7 @@ cleanup:
     (void)descriptor;
 }
 
-void lv2_connect_port(LV2_Handle instance, uint32_t port, void* dataLocation)
+static void lv2_connect_port(LV2_Handle instance, uint32_t port, void* dataLocation)
 {
     FluidSynthPluginData* const data = instance;
 
@@ -245,14 +245,14 @@ void lv2_connect_port(LV2_Handle instance, uint32_t port, void* dataLocation)
     }
 }
 
-void lv2_activate(LV2_Handle instance)
+static void lv2_activate(LV2_Handle instance)
 {
     FluidSynthPluginData* const data = instance;
 
     data->needsReset = true;
 }
 
-void lv2_run(LV2_Handle instance, uint32_t frames)
+static void lv2_run(LV2_Handle instance, uint32_t frames)
 {
     // do nothing in pre-roll mode
     if (frames == 0)
@@ -362,7 +362,7 @@ void lv2_run(LV2_Handle instance, uint32_t frames)
         fluid_synth_write_float(data->synth, frames-frameOffset, data->buffers[0]+frameOffset, 0, 1, data->buffers[1]+frameOffset, 0, 1);
 }
 
-void lv2_cleanup(LV2_Handle instance)
+static void lv2_cleanup(LV2_Handle instance)
 {
     FluidSynthPluginData* const data = instance;
 
@@ -372,3 +372,21 @@ void lv2_cleanup(LV2_Handle instance)
     free(data);
 }
 
+
+
+LV2_SYMBOL_EXPORT
+const LV2_Descriptor* lv2_descriptor(uint32_t index)
+{
+    static const LV2_Descriptor sDescriptor = {
+        .URI            = "http://helander.network/lv2soundfont/FOOBAR",
+        .instantiate    = lv2_instantiate,
+        .connect_port   = lv2_connect_port,
+        .activate       = lv2_activate,
+        .run            = lv2_run,
+        .deactivate     = NULL,
+        .cleanup        = lv2_cleanup,
+        .extension_data = NULL,
+    };
+
+    return (index == 0) ? &sDescriptor : NULL;
+}

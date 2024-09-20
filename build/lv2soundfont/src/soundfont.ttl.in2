@@ -1,14 +1,12 @@
     ] ;
 
-    mod:brand "FluidGM" ;
-    mod:label "xLABELx" ;
 
     doap:name "xLABELx" ;
     doap:license "LGPL" ;
 
     doap:maintainer [
-        foaf:name "falkTX" ;
-        foaf:homepage <https://github.com/falkTX/FluidPlug> ;
+        foaf:name "Lars-Erik Helander" ;
+        foaf:homepage <https://github.com/helander/soundcan> ;
     ] ;
 
     lv2:minorVersion 2 ;

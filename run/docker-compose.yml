@@ -32,41 +32,44 @@ services:
       - 9999:9999
 
 
-  essential-keys:
-    build: essential-keys
+  session:
+    build: session
     restart: unless-stopped
-    command: pw-jack -p 128 jalv -i -H 7890 http://helander.network/lv2soundfont/EssentialKeys
     volumes:
       - /run/user/1000/pipewire-0:/tmp/pipewire-0
+      - /home/lehswe/soundfonts/Essential-Keys-SF-v1.3.sf2:/soundfonts/essential-keys
+      - /home/lehswe/soundfonts/Monalisa-GM-v2_06_5.sf2:/soundfonts/mona-lisa
     ports:
-      - 7890:7890
+      - 7890-7892:7890-7892
+#      - 5555-5556:5555-5556
 
-  mona-lisa:
-    build: mona-lisa
+  mh:
+    image: sqimage-modhost
     restart: unless-stopped
-    command: pw-jack -p 128 jalv -i -H 7890 http://helander.network/lv2soundfont/MonaLisa
+    command: sleep infinity
     volumes:
       - /run/user/1000/pipewire-0:/tmp/pipewire-0
     ports:
-      - 7891:7890
+      - 5555-5556:5555-5556
 
-  set-bfree:
-    image: sqimage-setbfree
-    restart: unless-stopped
-    command: pw-jack -p 128 jalv -i -H 7890 http://gareus.org/oss/lv2/b_synth
-    volumes:
-      - /run/user/1000/pipewire-0:/tmp/pipewire-0
-    ports:
-      - 7892:7890
 
-  setbfreecontrol:
-    build: setbfreecontrol
-    restart: unless-stopped
-    command: pw-jack -p 128 jalv -i -H 7890 http://helander.network/plugins/lv2/setbfreecontrol
-    volumes:
-      - /run/user/1000/pipewire-0:/tmp/pipewire-0
-    ports:
-      - 7893:7890
+#  set-bfree:
+#    image: sqimage-setbfree
+#    restart: unless-stopped
+#    command: pw-jack -p 128 jalv -i -H 7890 http://gareus.org/oss/lv2/b_synth
+#    volumes:
+#      - /run/user/1000/pipewire-0:/tmp/pipewire-0
+#    ports:
+#      - 7892:7890
+
+#  setbfreecontrol:
+#    build: setbfreecontrol
+#    restart: unless-stopped
+#    command: pw-jack -p 128 jalv -i -H 7890 http://helander.network/plugins/lv2/setbfreecontrol
+#    volumes:
+#      - /run/user/1000/pipewire-0:/tmp/pipewire-0
+#    ports:
+#      - 7893:7890
 
 
 volumes:

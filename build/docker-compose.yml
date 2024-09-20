@@ -2,11 +2,26 @@ name: sqimage
 
 services:
 
+  run-platform:
+    build: run-platform
+
+  build-platform:
+    build: build-platform
+
   jalv-http:
     build: jalv-http
+
+  ingen:
+    build: ingen
+
+  modhost:
+    build: modhost
 
   lv2soundfont:
     build: lv2soundfont
 
   setbfree:
     build: setbfree
+
+  setbfreecontrol:
+    build: setbfreecontrol
