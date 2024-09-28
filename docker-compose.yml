@@ -17,8 +17,8 @@ services:
     volumes:
       - /run/user/1000/pipewire-0:/tmp/pipewire-0
       - tools-data:/tools-data
-#    devices:
-#      - /dev/snd:/dev/snd
+    devices:
+      - /dev/snd:/dev/snd
 
   webui:
     build: webui
