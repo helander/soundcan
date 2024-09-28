@@ -3,7 +3,7 @@
   <div id="controls"></div>
   <script type="module">
            const pageUrl = new URL(window.location.href);
-           const serviceUrl = "http://"+pageUrl.hostname+":7890/control";
+           const serviceUrl = "http://"+pageUrl.hostname+":3100/control";
            const response = await fetch(serviceUrl);
            const controls = await response.json();
            const controlsContainer = document.getElementById("controls");

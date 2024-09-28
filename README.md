@@ -24,4 +24,4 @@ Real life example: a Raspberry Pi 4 with Rasperry Pi OS and Fluidsynth. Test don
 * with the standard kernel (PREEMPT) it was possible to have 7 Fluidsynth instances without "bad sounds"
 * with the RT kernel (PREEMPT_RT) it was possible to have 11 Fluidsynth instances without "bad sounds"
 
-Some people argue that today's standard kernels are good enough for music production, and they are for certain configurations. But given a specific hardware platform you will always get more performance out of it with an RT kernel. But if the performance you get matches your requirements you are among the lucky ones ( that do not have to find an RT kernel or by stronger hardware).
+Some people argue that today's standard kernels are good enough for music production; and they are, for certain configurations. But given a specific hardware platform you will always get more performance out of it with an RT kernel. But if the performance you get matches your requirements you are among the lucky ones ( that do not have to find an RT kernel or buy stronger hardware).

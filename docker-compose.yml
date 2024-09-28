@@ -1,0 +1,85 @@
+name: soundcan
+
+services:
+
+  # dela upp desktop i xserver vncserver och desktop med 1 process i varje
+  desktop:
+    build: desktop
+    restart: unless-stopped
+    ports:
+      - 5900:5900
+      - 6000:6000
+      - 9001:9001
+
+  tools:
+    build: tools
+    restart: unless-stopped
+    volumes:
+      - /run/user/1000/pipewire-0:/tmp/pipewire-0
+      - tools-data:/tools-data
+#    devices:
+#      - /dev/snd:/dev/snd
+
+  webui:
+    build: webui
+    restart: unless-stopped
+    ports:
+      - 9999:9999
+    volumes:
+      - /home/lehswe/sq/run/webproto:/usr/share/webui/www/proto
+
+  essential-keys-a:
+    build: fluidsynth
+    restart: unless-stopped
+    volumes:
+      - /run/user/1000/pipewire-0:/tmp/pipewire-0
+      - /mnt/Essential-Keys-SF-v1.3.sf2:/soundfont
+    ports:
+      - 3000:3000
+    environment:
+      FONT_TITLE: "Essential Keys A"
+
+  essential-keys-b:
+    build: fluidsynth
+    restart: unless-stopped
+    volumes:
+      - /run/user/1000/pipewire-0:/tmp/pipewire-0
+      - /mnt/Essential-Keys-SF-v1.3.sf2:/soundfont
+    ports:
+      - 3001:3000
+    environment:
+      FONT_TITLE: "Essential Keys B"
+
+  mona-lisa-a:
+    build: fluidsynth
+    restart: unless-stopped
+    volumes:
+      - /run/user/1000/pipewire-0:/tmp/pipewire-0
+      - /mnt/Monalisa-GM-v2_06_5.sf2:/soundfont
+    ports:
+      - 3010:3000
+    environment:
+      FONT_TITLE: "Mona Lisa A"
+
+  mona-lisa-b:
+    build: fluidsynth
+    restart: unless-stopped
+    volumes:
+      - /run/user/1000/pipewire-0:/tmp/pipewire-0
+      - /mnt/Monalisa-GM-v2_06_5.sf2:/soundfont
+    ports:
+      - 3011:3000
+    environment:
+      FONT_TITLE: "Mona Lisa B"
+
+  setbfree:
+    build: setbfree
+    restart: unless-stopped
+    volumes:
+      - /run/user/1000/pipewire-0:/tmp/pipewire-0
+    ports:
+      - 3100:3100
+      - 3101:3101
+
+volumes:
+  tools-data:
