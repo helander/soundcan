@@ -1,4 +1,4 @@
-name: soundcan
+#name: soundcan
 
 services:
 
@@ -19,6 +19,7 @@ services:
       - tools-data:/tools-data
     devices:
       - /dev/snd:/dev/snd
+
 
   webui:
     build: webui

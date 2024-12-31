@@ -27,6 +27,7 @@ struct CONTROL_T {
 };
 
 extern void runCommand(char *command, char *response, int responseMax);
+extern void setTargetAddress(char *host, int port);
 
 static int nmbControls;
 
@@ -41,12 +42,20 @@ static char *typeImage(enum ValueType type)
   return NULL;
 }
 
+static void setReadValue(control_t *control, char *value) {
+  if (value != NULL) {
+    strcpy(control->readValue,value);
+  } else {
+    strcpy(control->readValue,"NULL");
+  }
+}
+
 static void readTitle(control_t *control)
 {
   char response[100];
   runCommand("get midi.jack.id", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 static void writeTitle(control_t *control)
@@ -58,7 +67,7 @@ static void readGain(control_t *control)
   char response[100];
   runCommand("get synth.gain", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 static void writeGain(control_t *control)
@@ -127,7 +136,7 @@ static void readReverbActive(control_t *control)
   char response[100];
   runCommand("get synth.reverb.active", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 
@@ -145,7 +154,7 @@ static void readReverbDamp(control_t *control)
   char response[100];
   runCommand("get synth.reverb.damp", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 
@@ -163,7 +172,7 @@ static void readReverbLevel(control_t *control)
   char response[100];
   runCommand("get synth.reverb.level", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 
@@ -181,7 +190,8 @@ static void readReverbRoomSize(control_t *control)
   char response[100];
   runCommand("get synth.reverb.room-size", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
+
 }
 
 
@@ -199,7 +209,7 @@ static void readReverbWidth(control_t *control)
   char response[100];
   runCommand("get synth.reverb.width", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 
@@ -217,7 +227,7 @@ static void readChorusActive(control_t *control)
   char response[100];
   runCommand("get synth.chorus.active", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 
@@ -235,7 +245,7 @@ static void readChorusDepth(control_t *control)
   char response[100];
   runCommand("get synth.chorus.depth", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 
@@ -253,7 +263,7 @@ static void readChorusLevel(control_t *control)
   char response[100];
   runCommand("get synth.chorus.level", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 
@@ -271,7 +281,7 @@ static void readChorusNr(control_t *control)
   char response[100];
   runCommand("get synth.chorus.nr", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 
@@ -289,7 +299,7 @@ static void readChorusSpeed(control_t *control)
   char response[100];
   runCommand("get synth.chorus.speed", response, sizeof(response));
   char *token = strtok(response,"\n");
-  strcpy(control->readValue,token);
+  setReadValue(control,token);
 }
 
 
@@ -316,11 +326,11 @@ control_t controls[] = {
   { TYPE_FLOAT, "Chorus depth", "4.0", "10.0", NULL, "", "", readChorusDepth, writeChorusDepth },
   { TYPE_FLOAT, "Chorus level", "0.25", "2.5", NULL, "", "", readChorusLevel, writeChorusLevel },
   { TYPE_INT, "Chorus nr", "0", "10", NULL, "", "", readChorusNr, writeChorusNr },
-  { TYPE_FLOAT, "Chorus speed", "0.1", "5.0", NULL, "", "", readChorusSpeed, writeChorusSpeed },
+  { TYPE_FLOAT, "Chorus speed", "0.101", "5.0", NULL, "", "", readChorusSpeed, writeChorusSpeed },
   { END_OF_LIST },
 }; 
 
-void getControlInstance(int index, char *response, void *context)
+void getControlInstance(int index, char *response)
 {
   if (index >= nmbControls) return;
   control_t *control = &controls[index];
@@ -328,7 +338,7 @@ void getControlInstance(int index, char *response, void *context)
   strcpy(response,control->readValue);
 }
 
-void setControlInstance(int index, char *value, void *context)
+void setControlInstance(int index, char *value)
 {
   if (index >= nmbControls) return;
   control_t *control = &controls[index];
@@ -338,8 +348,9 @@ void setControlInstance(int index, char *value, void *context)
 
 static char instrumentPoints[20000];
 
-void initControl(void *context)
+void initControl()
 {
+  setTargetAddress("localhost",9800);
   for(nmbControls = 0; controls[nmbControls].type != END_OF_LIST; nmbControls++) {} 
 
   char response[5000];
@@ -360,9 +371,9 @@ void initControl(void *context)
   controls[2].points = instrumentPoints; // Hard coded index
 }
 
-void getControlInstances(char *response, void *context)
+void getControlInstances(char *response)
 {
-  initControl(context);
+  initControl();
   strcpy(response,"[");
   for(int i = 0; controls[i].type != END_OF_LIST; i++) {
     control_t *control = &controls[i];
