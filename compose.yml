@@ -21,22 +21,31 @@ services:
       - /dev/snd:/dev/snd
 
 
-  webui:
-    build: webui
+  ui:
+    build: ui
     restart: unless-stopped
     ports:
-      - 9999:9999
+      - 9999:3300
     volumes:
-      - /home/lehswe/sq/run/webproto:/usr/share/webui/www/proto
+      - session:/session
+
+  sqlite-web:
+    build: sqlite-web
+    restart: unless-stopped
+    ports:
+      - 8081:8080
+    volumes:
+      - session:/data
+    environment:
+      - SQLITE_DATABASE=settings.db
+      - TZ=Europe/Stockholm
 
   essential-keys-a:
-    build: fluidsynth
+    build: fluidsynthmq
     restart: unless-stopped
     volumes:
       - /run/user/1000/pipewire-0:/tmp/pipewire-0
       - /mnt/Essential-Keys-SF-v1.3.sf2:/soundfont
-    ports:
-      - 3000:3000
     environment:
       FONT_TITLE: "Essential Keys A"
 
@@ -84,3 +93,4 @@ services:
 
 volumes:
   tools-data:
+  session:
