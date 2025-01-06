@@ -15,7 +15,7 @@ services:
     build: tools
     restart: unless-stopped
     volumes:
-      - /run/user/1000/pipewire-0:/tmp/pipewire-0
+      - /tmp/1000-runtime-dir/pipewire-0:/tmp/pipewire-0
       - tools-data:/tools-data
     devices:
       - /dev/snd:/dev/snd
@@ -41,11 +41,13 @@ services:
       - TZ=Europe/Stockholm
 
   essential-keys-a:
-    build: fluidsynthmq
+    build: fluidsynth
     restart: unless-stopped
+    ports:
+      - 9800:9800
     volumes:
-      - /run/user/1000/pipewire-0:/tmp/pipewire-0
-      - /mnt/Essential-Keys-SF-v1.3.sf2:/soundfont
+      - /tmp/1000-runtime-dir/pipewire-0:/tmp/pipewire-0
+      - $PWD/store/Essential-Keys-SF-v1.3.sf2:/soundfont
     environment:
       FONT_TITLE: "Essential Keys A"
 
@@ -53,8 +55,8 @@ services:
     build: fluidsynth
     restart: unless-stopped
     volumes:
-      - /run/user/1000/pipewire-0:/tmp/pipewire-0
-      - /mnt/Essential-Keys-SF-v1.3.sf2:/soundfont
+      - /tmp/1000-runtime-dir/pipewire-0:/tmp/pipewire-0
+      - $PWD/store/Essential-Keys-SF-v1.3.sf2:/soundfont
     ports:
       - 3001:3000
     environment:
@@ -64,8 +66,8 @@ services:
     build: fluidsynth
     restart: unless-stopped
     volumes:
-      - /run/user/1000/pipewire-0:/tmp/pipewire-0
-      - /mnt/Monalisa-GM-v2_06_5.sf2:/soundfont
+      - /tmp/1000-runtime-dir/pipewire-0:/tmp/pipewire-0
+      - $PWD/store/Monalisa-GM-v2_06_5.sf2:/soundfont
     ports:
       - 3010:3000
     environment:
@@ -75,8 +77,8 @@ services:
     build: fluidsynth
     restart: unless-stopped
     volumes:
-      - /run/user/1000/pipewire-0:/tmp/pipewire-0
-      - /mnt/Monalisa-GM-v2_06_5.sf2:/soundfont
+      - /tmp/1000-runtime-dir/pipewire-0:/tmp/pipewire-0
+      - $PWD/store/Monalisa-GM-v2_06_5.sf2:/soundfont
     ports:
       - 3011:3000
     environment:
@@ -86,7 +88,7 @@ services:
     build: setbfree
     restart: unless-stopped
     volumes:
-      - /run/user/1000/pipewire-0:/tmp/pipewire-0
+      - /tmp/1000-runtime-dir/pipewire-0:/tmp/pipewire-0
     ports:
       - 3100:3100
       - 3101:3101
