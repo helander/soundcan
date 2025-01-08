@@ -1,0 +1,54 @@
+
+{{define "indexpage"}}
+<html>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <head>
+       <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+       <script>
+          //htmx.logAll();
+       </script>
+
+       <style>
+         body {
+           font-family: "Helvetica Neue";
+           color: #747474;
+         }
+      </style>
+    </head>
+
+    {{template "indexbody" .}}
+
+</html>
+{{end}}
+
+{{define "indexbody"}}
+    <body id="bodyelement" hx-get="/indexbody" hx-trigger="every 60s" hx-swap="outerHTML">
+
+       {{ range $name, $engine := . }}
+       <div>
+          <h1>{{$name}} ({{$engine.Kind}})</h1>
+          {{ range $name, $control := $engine.Controls }}
+              {{template "control" $control}}
+          {{end}}
+       </div>
+       {{end}}
+
+    </body>
+
+{{end}}
+
+{{define "control"}}
+          <div>
+              <h4>{{.Engine}} {{.Kind}} {{.Name}}</h4>
+              <form oninput="oput.value=controlslider.value">
+                <div style="display: flex;">
+                  <output for="controlslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">{{.Control.Value}}</output>
+                  <div style="flex-grow: 1;">
+                    <input type="range" id="controlslider" name="level" hx-swap="none" hx-trigger="input" hx-vals='js:{evtype: event.type}'
+                           hx-put="/control?engine={{.Engine}}&control={{.Name}}" value="{{.Control.Value}}" min="{{.Control.Min}}" 
+                           max="{{.Control.Max}}" step="{{stepsize .Control.Min .Control.Max}}" />
+                  </div>
+                </div>
+              </form>
+          </div>
+{{end}}
