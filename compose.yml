@@ -30,17 +30,6 @@ services:
       - session:/session
       - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
 
-  sqlite-web:
-    build: sqlite-web
-    restart: unless-stopped
-    ports:
-      - 8081:8080
-    volumes:
-      - session:/data
-    environment:
-      - SQLITE_DATABASE=settings.db
-      - TZ=Europe/Stockholm
-
   essential-keys-a:
     build: fluidsynth
     restart: unless-stopped

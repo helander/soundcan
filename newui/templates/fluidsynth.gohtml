@@ -1,0 +1,18 @@
+
+{{define "fluidsynth"}}
+  <div>
+      <h1>Fluidsynth {{.}}</h1>
+      <form oninput="oput.value=ccslider.value">
+        <div style="display: flex;">
+           <output for="ccslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">50</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="ccslider" name="ccvalue"
+                     value="50" min="0" max="127" step="1"
+                     hx-post="/port/{{.}}/midicc/0/7" hx-swap="none" hx-trigger="input"  
+              />
+           </div>
+        </div>
+      </form>
+  </div>
+{{end}}
+

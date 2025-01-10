@@ -1,59 +1,72 @@
 package midi
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/xthexder/go-jack"
 )
 
+type PortRecord struct {
+   Name string
+   Chan chan jack.MidiData
+   Output *jack.Port
+}
+
 var (
-	portOut	*jack.Port
-	inputch	chan jack.MidiData
+	ports map[string]PortRecord
 )
 
-func Send(midiport string,data []byte) {
-			md := jack.MidiData{}
-			md.Time = 0
-			md.Buffer = data
-			fmt.Printf("\nSend %v to inputch[%s]",md,midiport)
-			inputch <- md
-			fmt.Printf("\nSent to inputch")
+func Send(port string,data []byte) {
+			mididata := jack.MidiData{}
+			mididata.Time = 0
+			mididata.Buffer = data
+			log.Printf("Send %v to gochan for port %s",mididata,port)
+			ports[port].Chan <- mididata
+			log.Printf("Sent to gochan")
 }
 
 func process(nframes uint32) int {
-	buf := portOut.MidiClearBuffer(nframes)
-	select {
-    		case event := <- inputch:
-        		fmt.Println("received event", event)
-			portOut.MidiEventWrite(&event, buf)
-    		default:
-        		//fmt.Println("no message received")
-    	}
+	for _, port := range ports {
+		buf := port.Output.MidiClearBuffer(nframes)
+		select {
+    			case event := <- port.Chan:
+        			log.Printf("received event", event)
+				port.Output.MidiEventWrite(&event, buf)
+    			default:
+        			//log.Printf("no message received")
+    		}
+	}
 
 	return 0
 }
 
 func init() {
-	inputch = make(chan jack.MidiData,100)
+	portNames := []string{"essential-keys-a","essential-keys-b"}
 
 	client, status := jack.ClientOpen("Soundcan UI Bridge", jack.NoStartServer)
 	if status != 0 {
-		fmt.Println(jack.StrError(status))
+		log.Printf("%v",jack.StrError(status))
 		return
 	}
 	//defer client.Close()
 
-	portOut = client.PortRegister("midi_out", jack.DEFAULT_MIDI_TYPE, jack.PortIsOutput, 0)
+	ports = make(map[string]PortRecord)
+	for _, name := range portNames {
+		port := PortRecord{}
+		port.Name = name
+		port.Chan = make(chan jack.MidiData,100)
+		port.Output = client.PortRegister(name, jack.DEFAULT_MIDI_TYPE, jack.PortIsOutput, 0)
+		ports[name] = port
+	}
 
 	if code := client.SetProcessCallback(process); code != 0 {
-		fmt.Println("Failed to set process callback: ", jack.StrError(code))
+		log.Printf("Failed to set process callback: %v", jack.StrError(code))
 		return
 	}
 
 	if code := client.Activate(); code != 0 {
-		fmt.Println("Failed to activate client: ", jack.StrError(code))
+		log.Printf("Failed to activate client: %v", jack.StrError(code))
 		return
 	}
 
-	fmt.Println(client.GetName())
 }
