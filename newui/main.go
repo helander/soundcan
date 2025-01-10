@@ -6,10 +6,11 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
-//	"strconv"
+	"strconv"
 
 
         "github.com/helander/soundcan/ui/db"
+        "github.com/helander/soundcan/ui/midi"
 )
 
 
@@ -74,15 +75,29 @@ func init() {
 	if templates != nil {
 		http.HandleFunc("/", serveIndexTemplate)
 		http.HandleFunc("/indexbody", serveIndexBodyTemplate)
+	        http.HandleFunc("/port/{port}",servePortIndexTemplate)
+	        http.HandleFunc("/port/{port}/indexbody",servePortIndexBodyTemplate)
                 http.HandleFunc("/control",serveControlTemplate)
 	}
+        http.HandleFunc("/port/{port}/midicc/{channel}/{control}",serveMidiCC)
 	images := http.FileServer(http.Dir("ui/img"))
 	http.Handle("/img/", http.StripPrefix("/img/", images))
 }
 
 func main() {
-	http.ListenAndServe(":3300", nil)
+	http.ListenAndServe(":3300", logRequest(http.DefaultServeMux))
 }
+
+
+
+func logRequest(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+		handler.ServeHTTP(w, r)
+	})
+}
+
+
 
 func serveIndexTemplate(w http.ResponseWriter, r *http.Request) {
 	err := templates.ExecuteTemplate(w, "indexpage", getFullContext())
@@ -95,6 +110,22 @@ func serveIndexBodyTemplate(w http.ResponseWriter, r *http.Request) {
 	err := templates.ExecuteTemplate(w, "indexbody", getFullContext())
 	if err != nil {
 		fmt.Printf("\nError executing indexbody template %v", err)
+	}
+}
+
+func servePortIndexTemplate(w http.ResponseWriter, r *http.Request) {
+	port := r.PathValue("port")
+	err := templates.ExecuteTemplate(w, "portindexpage", port)
+	if err != nil {
+		fmt.Printf("\nError executing port index template %v", err)
+	}
+}
+
+func servePortIndexBodyTemplate(w http.ResponseWriter, r *http.Request) {
+	port := r.PathValue("port")
+	err := templates.ExecuteTemplate(w, "portindexbody", port)
+	if err != nil {
+		fmt.Printf("\nError executing port indexbody template %v", err)
 	}
 }
 
@@ -116,5 +147,23 @@ func serveControlTemplate(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("\nError executing control template %v", err)
 	}
 */
+}
+
+func serveMidiCC(w http.ResponseWriter, r *http.Request) {
+	port := r.PathValue("port")
+	channel, _ := strconv.Atoi(r.PathValue("channel"))
+	control, _ := strconv.Atoi(r.PathValue("control"))
+	err := r.ParseForm()
+	if err != nil {
+                log.Printf("midiCC service: parse form error %v", err)
+                return
+	}
+        mididata := make([]byte,3)
+        ccvalue, _ := strconv.Atoi(r.Form.Get("ccvalue"))
+        mididata[0] = 0xb0 | 0x0f & byte(channel)
+        mididata[1] = byte(control)
+        mididata[2] = byte(ccvalue)
+        fmt.Printf("\nMIDI %v to port %s",mididata,port)
+        midi.Send(port,mididata)
 }
 

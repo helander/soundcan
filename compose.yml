@@ -28,6 +28,7 @@ services:
       - 9999:3300
     volumes:
       - session:/session
+      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
 
   sqlite-web:
     build: sqlite-web
