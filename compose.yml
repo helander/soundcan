@@ -22,7 +22,7 @@ services:
 
 
   ui:
-    build: newui
+    build: ui
     restart: unless-stopped
     ports:
       - 9999:3300
