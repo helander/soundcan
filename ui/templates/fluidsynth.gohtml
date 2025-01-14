@@ -1,7 +1,9 @@
 
 {{define "fluidsynth"}}
   <div>
-      <h1>Fluidsynth {{.}}</h1>
+      <h4>Fluidsynth {{.}}</h4>
+      {{template "fluidsynthpatch" .}}
+
       <form oninput="oput.value=ccslider.value">
         <div style="display: flex;">
            <output for="ccslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">50</output>
@@ -16,3 +18,19 @@
   </div>
 {{end}}
 
+{{define "fluidsynthpatch"}}
+  <div>
+      <select name="bank" hx-post="/fluidsynth/{{.}}/selectbank/0" hx-target="closest div" hx-swap="outerHTML">
+        {{$bank:=(bank .)}}
+        {{range banks .}}
+          <option value="{{.}}" {{if eq . $bank}}selected {{end}}>{{.}}</option>
+        {{end}}
+      </select>
+      <select name="program" hx-post="/fluidsynth/{{.}}/selectprogram/0" hx-target="closest div" hx-swap="outerHTML">
+        {{$program:=(program .)}}
+        {{range programs .}}
+          <option value="{{.Program}}" {{if eq .Program $program}}selected{{end}} >{{.Name}}</option>
+        {{end}}
+      </select>
+  </div>
+{{end}}

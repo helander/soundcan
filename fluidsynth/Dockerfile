@@ -22,6 +22,7 @@ COPY --from=base / /
 RUN apt update -y
 RUN apt install -y pipewire-jack
 RUN apt install -y fluidsynth
+RUN apt install -y sqlite3
 COPY --from=build_fluidui /usr/bin/fluid-ui /usr/bin/fluid-ui
 ##########################################
 # Defult environment provided by image

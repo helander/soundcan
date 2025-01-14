@@ -36,47 +36,57 @@ services:
     ports:
       - 9800:9800
     volumes:
+      - session:/session
       - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
       - $PWD/store/Essential-Keys-SF-v1.3.sf2:/soundfont
     environment:
       FONT_TITLE: "Essential Keys A"
+      SOUNDCAN_NAME: "essential-keys-a"
 
   essential-keys-b:
     build: fluidsynth
     restart: unless-stopped
     volumes:
+      - session:/session
       - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
       - $PWD/store/Essential-Keys-SF-v1.3.sf2:/soundfont
     ports:
       - 3001:3000
     environment:
       FONT_TITLE: "Essential Keys B"
+      SOUNDCAN_NAME: "essential-keys-b"
 
   mona-lisa-a:
     build: fluidsynth
     restart: unless-stopped
     volumes:
+      - session:/session
+      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
       - $PWD/store/Monalisa-GM-v2_06_5.sf2:/soundfont
     ports:
       - 3010:3000
     environment:
       FONT_TITLE: "Mona Lisa A"
+      SOUNDCAN_NAME: "mona-lisa-a"
 
   mona-lisa-b:
     build: fluidsynth
     restart: unless-stopped
     volumes:
+      - session:/session
       - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
       - $PWD/store/Monalisa-GM-v2_06_5.sf2:/soundfont
     ports:
       - 3011:3000
     environment:
       FONT_TITLE: "Mona Lisa B"
+      SOUNDCAN_NAME: "mona-lisa-b"
 
   setbfree:
     build: setbfree
     restart: unless-stopped
     volumes:
+      - session:/session
       - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
     ports:
       - 3100:3100

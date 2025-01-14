@@ -7,6 +7,8 @@ import (
 )
 
 type PortRecord struct {
+   Bank int
+   Program int
    Name string
    Chan chan jack.MidiData
    Output *jack.Port
@@ -15,6 +17,26 @@ type PortRecord struct {
 var (
 	ports map[string]PortRecord
 )
+
+func SelectBank(port string, bank int) {
+        portRecord := ports[port]
+	portRecord.Bank = bank
+	ports[port] = portRecord
+}
+
+func SelectedBank(port string) int {
+	return ports[port].Bank 
+}
+
+func SelectProgram(port string, program int) {
+        portRecord := ports[port]
+	portRecord.Program = program
+	ports[port] = portRecord
+}
+
+func SelectedProgram(port string) int {
+	return ports[port].Program 
+}
 
 func Send(port string,data []byte) {
 			mididata := jack.MidiData{}
@@ -41,7 +63,7 @@ func process(nframes uint32) int {
 }
 
 func init() {
-	portNames := []string{"essential-keys-a","essential-keys-b"}
+	portNames := []string{"essential-keys-a","essential-keys-b","mona-lisa-a","mona-lisa-b"}
 
 	client, status := jack.ClientOpen("Soundcan UI Bridge", jack.NoStartServer)
 	if status != 0 {

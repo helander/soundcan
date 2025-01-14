@@ -15,21 +15,42 @@ type  ControlValue struct {
   Max string
 }
 
-func GetEngines() (map[string]string, error) {
-	var engines = make(map[string]string)
+type ProgramRecord struct {
+        Program int
+        Name    string
+}
 
-	row, err := database.Query("SELECT engine,kind from engines")
+
+func GetBanks(port string) []int {
+	var banks = make([]int,0)
+
+	row, err := database.Query("SELECT DISTINCT bank from patches where port = ?", port)
 	if err != nil {
-		return engines, err
+		return banks
 	}
 	defer row.Close()
 	for row.Next() { // Iterate and fetch the records from result cursor
-		var engine string
-		var kind string
-		row.Scan(&engine, &kind)
-		engines[engine] = kind
+		var bank int
+		row.Scan(&bank)
+		banks = append(banks,bank)
 	}
-	return engines, nil
+	return banks
+}
+
+func GetPrograms(port string, bank int) []ProgramRecord {
+	var programs = make([]ProgramRecord,0)
+
+	row, err := database.Query("SELECT program,name from patches where port = ? and bank = ?", port,bank)
+	if err != nil {
+		return programs
+	}
+	defer row.Close()
+	for row.Next() { // Iterate and fetch the records from result cursor
+		program := ProgramRecord{}
+		row.Scan(&program.Program, &program.Name)
+		programs = append(programs,program)
+	}
+	return programs
 }
 
 func GetControls(engine string) (map[string]ControlValue, error) {

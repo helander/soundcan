@@ -22,10 +22,12 @@
 {{end}}
 
 {{define "indexbody"}}
-    <body id="bodyelement" hx-get="/indexbody" hx-trigger="every 60s" hx-swap="outerHTML">
-
+    <!--body id="bodyelement" hx-get="/indexbody" hx-trigger="every 60s" hx-swap="outerHTML"-->
+    <body>
        {{template "fluidsynth" "essential-keys-a"}}
        {{template "fluidsynth" "essential-keys-b"}}
+       {{template "fluidsynth" "mona-lisa-a"}}
+       {{template "fluidsynth" "mona-lisa-b"}}
 
     </body>
 
