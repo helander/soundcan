@@ -3,23 +3,18 @@ FROM golang:1.23
 RUN apt update
 RUN apt install -y libjack-jackd2-dev pipewire-jack
 
-WORKDIR /opt
-
-#COPY go.mod go.sum ./
+COPY src ./build/
+WORKDIR build
 RUN go mod init github.com/helander/soundcan/ui
 RUN go mod tidy
-RUN go get github.com/xthexder/go-jack 
-RUN go get github.com/glebarez/go-sqlite
-RUN go mod download && go mod verify
-
-COPY . .
-
 RUN go install ./...
 
+WORKDIR /root
 
+COPY img ./img/
+COPY templates ./templates/
+COPY entrypoint.sh ./
+
+ENTRYPOINT ["/root/entrypoint.sh"]
 
 ENV XDG_RUNTIME_DIR=/tmp
-
-ADD entrypoint.sh /
-ENTRYPOINT ["/entrypoint.sh"]
-
