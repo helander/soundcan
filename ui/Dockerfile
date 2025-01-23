@@ -12,6 +12,7 @@ RUN go install ./...
 WORKDIR /root
 
 COPY img ./img/
+COPY js ./js
 COPY templates ./templates/
 COPY entrypoint.sh ./
 
