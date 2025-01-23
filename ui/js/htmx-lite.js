@@ -3,6 +3,7 @@ async function handler(event) {
     event.preventDefault();
     element = event.target;
         let xtype = element.getAttribute('hl-req');
+        if (xtype === null) xtype = "post";
         let xurl = element.getAttribute('hl-url');
         let xtrigger = element.getAttribute('hl-trigger');
         let xtarget = element.getAttribute('hl-target');
@@ -65,7 +66,7 @@ async function handler(event) {
             } else {
                 eltarget[xswap] = content;
                 //console.log('fill non-adjacent',xswap,eltarget)
-                let elements = target.querySelectorAll(':scope [hl-req]');
+                let elements = target.querySelectorAll(':scope [hl-url]');
                 setup(elements);
             }
     }
@@ -73,12 +74,12 @@ async function handler(event) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    let elements = document.querySelectorAll('[hl-req]');
+    let elements = document.querySelectorAll('[hl-url]');
     setup(elements);
 });
 
 function setup(elements) {
-    console.log("elements",elements)
+    //console.log("elements",elements)
     for (let i = 0; i < elements.length; i++) {
         let element = elements[i];
 

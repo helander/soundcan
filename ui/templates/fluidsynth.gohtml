@@ -1,92 +1,205 @@
-
 {{define "fluidsynth"}}
-  <div>
+  <div style="accent-color: green">
       <h4>Fluidsynth  {{.Host}} {{.Port}}</h4>
+
+      <h5>Reverb</h5>
 
       <form oninput="oput.value=settingslider.value">
         <div style="display: flex;">
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">1.5</output>
+	   <output style="width: 6em;text-align: left">Active</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">0</output>
            <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue"
-                     value="1.5" min="0" max="5" step="0.1"
-                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/foosing" hx-swap="none" hx-trigger="input"  
+              <input type="range" id="settingslider" name="settingvalue" style="width: 25%"
+                     value="0" min="0" max="1" step="1"
+                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.reverb.active" hx-swap="none" hx-trigger="input,load"  
+                     hl-url="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.reverb.active" hl-swap="none" hl-trigger="input,load"  
               />
            </div>
         </div>
       </form>
 
-      {{template "fluidsynthchannel" (index .Channels "0")}}
-      {{template "fluidsynthchannel" (index .Channels "1")}}
-      {{template "fluidsynthchannel" (index .Channels "2")}}
-      {{template "fluidsynthchannel" (index .Channels "3")}}
-      {{template "fluidsynthchannel" (index .Channels "4")}}
-      {{template "fluidsynthchannel" (index .Channels "5")}}
-      {{template "fluidsynthchannel" (index .Channels "6")}}
-      {{template "fluidchannel" (fluidchannel .Host .Port "7")}}
-
-  </div>
-{{end}}
-
-{{define "fluidsynthchannel"}}
-  <div>
-      <output>Channel {{.Channel}}</output>
-
-      <select name="font" style="font-size: 0.8em;accent-color: green;" hx-post="/fluidsynth/{{.Host}}/{{.Port}}/selectfont/{{.Channel}}" hx-target="closest div" hx-swap="outerHTML">
-        {{$font:=.Sfont}}
-        {{range (fonts .Host .Port)}}
-          <option value="{{.Font}}" {{if eq .Font $font}}selected {{end}}>{{.Filename}}</option>
-        {{end}}
-     </select>
-
-      <select name="bankpreset"  style="font-size: 1em;accent-color: green;" hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setbankpreset/{{.Channel}}" hx-target="closest div" hx-swap="outerHTML">
-        {{$bankpreset:=printf "%03s-%03s" .Bank .Preset}}
-        {{range (index (fonts .Host .Port) .Sfont).Instruments}}
-          {{$bp:=printf "%s-%s" .Bank .Preset}}
-          <option value="{{$bp}}" {{if eq $bp $bankpreset}}selected {{end}}>{{.Name}}</option>
-        {{end}}
-      </select>
-
-      <form oninput="oput.value=volumeslider.value">
+      <form oninput="oput.value=settingslider.value">
         <div style="display: flex;">
-           <output for="volumeslider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">{{.Volume}}</output>
+	   <output style="width: 6em;text-align: left">Damp</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">0.2</output>
            <div style="flex-grow: 1;">
-              <input type="range" id="volumeslider" name="volume" style="width: 50%;accent-color: green;"
-                     value="{{.Volume}}" min="0" max="127" step="1"
-                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setvolume/{{.Channel}}" hx-swap="none" hx-trigger="input"  
+              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
+                     value="0.2" min="0" max="1" step="0.01"
+                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.reverb.damp" hx-swap="none" hx-trigger="input,load"  
+                     hl-url="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.reverb.damp" hl-swap="none" hl-trigger="input,load"  
               />
            </div>
         </div>
       </form>
+
+      <form oninput="oput.value=settingslider.value">
+        <div style="display: flex;">
+	   <output style="width: 6em;text-align: left">Level</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">0.3</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
+                     value="0.3" min="0" max="1" step="0.01"
+                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.reverb.level" hx-swap="none" hx-trigger="input,load"  
+                     hl-url="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.reverb.level" hl-swap="none" hl-trigger="input,load"  
+              />
+           </div>
+        </div>
+      </form>
+
+      <form oninput="oput.value=settingslider.value">
+        <div style="display: flex;">
+	   <output style="width: 6em;text-align: left">Room size</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">0.4</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
+                     value="0.4" min="0" max="1" step="0.01"
+                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.reverb.room-size" hx-swap="none" hx-trigger="input,load"  
+                     hl-url="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.reverb.room-size" hl-swap="none" hl-trigger="input,load"  
+              />
+           </div>
+        </div>
+      </form>
+
+      <form oninput="oput.value=settingslider.value">
+        <div style="display: flex;">
+	   <output style="width: 6em;text-align: left">Width</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">33</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
+                     value="33" min="0" max="100" step="1"
+                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.reverb.width" hx-swap="none" hx-trigger="input,load"  
+                     hl-url="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.reverb.width" hl-swap="none" hl-trigger="input,load"  
+              />
+           </div>
+        </div>
+      </form>
+
+      <h5>Chorus</h5>
+
+      <form oninput="oput.value=settingslider.value">
+        <div style="display: flex;">
+	   <output style="width: 6em;text-align: left">Active</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">1</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="settingslider" name="settingvalue" style="width: 25%"
+                     value="1" min="0" max="1" step="1"
+                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.chorus.active" hx-swap="none" hx-trigger="input,load"  
+                     hl-url="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.chorus.active" hl-swap="none" hl-trigger="input,load"  
+              />
+           </div>
+        </div>
+      </form>
+
+
+      <form oninput="oput.value=settingslider.value">
+        <div style="display: flex;">
+	   <output style="width: 6em;text-align: left">Depth</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">123</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
+                     value="123" min="0" max="256" step="1"
+                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.chorus.depth" hx-swap="none" hx-trigger="input,load"  
+                     hl-url="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.chorus.depth" hl-swap="none" hl-trigger="input,load"  
+              />
+           </div>
+        </div>
+      </form>
+
+
+      <form oninput="oput.value=settingslider.value">
+        <div style="display: flex;">
+	   <output style="width: 6em;text-align: left">Level</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">7</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
+                     value="7" min="0" max="10" step="0.1"
+                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.chorus.level" hx-swap="none" hx-trigger="input,load"  
+                     hl-url="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.chorus.level" hl-swap="none" hl-trigger="input,load"  
+              />
+           </div>
+        </div>
+      </form>
+
+
+      <form oninput="oput.value=settingslider.value">
+        <div style="display: flex;">
+	   <output style="width: 6em;text-align: left">Voice count</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">49</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
+                     value="49" min="0" max="99" step="1"
+                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.chorus.nr" hx-swap="none" hx-trigger="input,load"  
+                     hl-url="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.chorus.nr" hl-swap="none" hl-trigger="input,load"  
+              />
+           </div>
+        </div>
+      </form>
+
+
+      <form oninput="oput.value=settingslider.value">
+        <div style="display: flex;">
+	   <output style="width: 6em;text-align: left">Speed</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">3.0</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
+                     value="3.0" min="0.1" max="5" step="0.05"
+                     hx-post="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.chorus.speed" hx-swap="none" hx-trigger="input,load"  
+                     hl-url="/fluidsynth/{{.Host}}/{{.Port}}/setting/synth.chorus.speed" hl-swap="none" hl-trigger="input,load"  
+              />
+           </div>
+        </div>
+      </form>
+
+
+      <h5>Channels</h5>
+      {{template "fluidchannel" (fluidchannel .Host .Port "0" "1")}}
+      {{template "fluidchannel" (fluidchannel .Host .Port "1" "1")}}
+      {{template "fluidchannel" (fluidchannel .Host .Port "2" "2")}}
+      {{template "fluidchannel" (fluidchannel .Host .Port "3" "2")}}
+
   </div>
 {{end}}
 
+
+{{define "fluidprogram"}}
+      <div>
+        <select name="font" style="font-size: 0.8em;accent-color: green;" 
+                hx-post="/fluidsynth/{{.host}}/{{.port}}/selectfont/{{.channel}}" hx-target="closest div" hx-swap="outerHTML" hx-trigger="change,load" hx-vals='js:{...event.htmx-internal-data}' 
+                hl-req="post" hl-url="/fluidsynth/{{.host}}/{{.port}}/selectfont/{{.channel}}" hl-target="div" hl-swap="outerHTML" hl-trigger="change,load"
+        >
+          {{$font:=.font}}
+          {{range (fonts .host .port)}}
+            <option value="{{.Font}}" {{if eq .Font $font}}selected {{end}}>{{.Filename}}</option>
+          {{end}}
+        </select>
+
+        <select  name="bankpreset"  style="font-size: 1em;accent-color: green;" 
+                 hx-post="/fluidsynth/{{.host}}/{{.port}}/setbankpreset/{{.channel}}" hx-swap="none"
+                 hl-req="post" hl-url="/fluidsynth/{{.host}}/{{.port}}/setbankpreset/{{.channel}}" hl-target="div" hl-swap="none"
+        >
+          {{range (index (fonts .host .port) .font).Instruments}}
+            {{$bp:=printf "%s-%s" .Bank .Preset}}
+            <option value="{{$bp}}" >{{.Name}}</option>
+          {{end}}
+        </select>
+      </div>
+
+{{end}}
 
 {{define "fluidchannel"}}
   <div>
       <output>Channel {{.channel}}</output>
 
-      <select name="font" style="font-size: 0.8em;accent-color: green;" hx-post="/fluidsynth/{{.host}}/{{.port}}/selectfont/{{.channel}}" hx-target="closest div" hx-swap="outerHTML">
-        {{$font:=.font}}
-        {{range (fonts .host .port)}}
-          <option value="{{.Font}}" {{if eq .Font $font}}selected {{end}}>{{.Filename}}</option>
-        {{end}}
-     </select>
-
-      <select name="bankpreset"  style="font-size: 1em;accent-color: green;" hx-post="/fluidsynth/{{.host}}/{{.port}}/setbankpreset/{{.channel}}" hx-target="closest div" hx-swap="outerHTML">
-        {{$bankpreset:=printf "%03s-%03s" .bank .preset}}
-        {{range (index (fonts .host .port) .font).Instruments}}
-          {{$bp:=printf "%s-%s" .Bank .Preset}}
-          <option value="{{$bp}}" {{if eq $bp $bankpreset}}selected {{end}}>{{.Name}}</option>
-        {{end}}
-      </select>
+      {{template "fluidprogram" .}}
 
       <form oninput="oput.value=volumeslider.value">
         <div style="display: flex;">
-           <output for="volumeslider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">{{.volume}}</output>
+           <output for="volumeslider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">10</output>
            <div style="flex-grow: 1;">
               <input type="range" id="volumeslider" name="volume" style="width: 50%;accent-color: green;"
-                     value="{{.volume}}" min="0" max="127" step="1"
-                     hx-post="/fluidsynth/{{.host}}/{{.port}}/setvolume/{{.channel}}" hx-swap="none" hx-trigger="input"  
+                     value="10" min="0" max="127" step="1"
+                     hx-post="/fluidsynth/{{.host}}/{{.port}}/setvolume/{{.channel}}" hx-swap="none" hx-trigger="input,load"  
+                     hl-req="post" hl-url="/fluidsynth/{{.host}}/{{.port}}/setvolume/{{.channel}}" hl-swap="none" hl-trigger="input,load"  
               />
            </div>
         </div>
@@ -94,19 +207,3 @@
   </div>
 {{end}}
 
-{{define "fluidsynthpatch"}}
-  <div>
-      <select name="bank" hx-post="/fluidsynth/{{.}}/selectbank/0" hx-target="closest div" hx-swap="outerHTML">
-        {{$bank:="(bank .)"}}
-        {{range "banks ."}}
-          <option value="{{.}}" {{if eq . $bank}}selected {{end}}>{{.}}</option>
-        {{end}}
-      </select>
-      <select name="program" hx-post="/fluidsynth/{{.}}/selectprogram/0" hx-target="closest div" hx-swap="outerHTML">
-        {{$program:="(program .)"}}
-        {{range "programs ."}}
-          <option value="{{.Program}}" {{if eq .Program $program}}selected{{end}} >{{.Name}}</option>
-        {{end}}
-      </select>
-  </div>
-{{end}}
