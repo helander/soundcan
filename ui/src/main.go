@@ -7,9 +7,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-        "github.com/helander/soundcan/ui/midi"
         "github.com/helander/soundcan/ui/fluidsynth"
-//        "github.com/helander/soundcan/ui/repo"
+        "github.com/helander/soundcan/ui/posixmq"
 )
 
 var templates *template.Template
@@ -26,14 +25,16 @@ func init() {
 		http.HandleFunc("/", serveIndexTemplate)
 		http.HandleFunc("/indexbody", serveIndexBodyTemplate)
 	}
-        http.HandleFunc("/port/{port}/midicc/{channel}/{control}",serveMidiCC)
+        http.HandleFunc("/midimq/{port}/midicc/{channel}/{control}",serveMqMidiCC)
 	images := http.FileServer(http.Dir("ui/img"))
 	http.Handle("/img/", http.StripPrefix("/img/", images))
 }
 
-func main() {
+
+func main(){
 	http.ListenAndServe(":3300", logRequest(http.DefaultServeMux))
 }
+
 
 func logRequest(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +57,7 @@ func serveIndexBodyTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func serveMidiCC(w http.ResponseWriter, r *http.Request) {
+func serveMqMidiCC(w http.ResponseWriter, r *http.Request) {
 	port := r.PathValue("port")
 	channel, _ := strconv.Atoi(r.PathValue("channel"))
 	control, _ := strconv.Atoi(r.PathValue("control"))
@@ -70,6 +71,10 @@ func serveMidiCC(w http.ResponseWriter, r *http.Request) {
         mididata[0] = 0xb0 | 0x0f & byte(channel)
         mididata[1] = byte(control)
         mididata[2] = byte(ccvalue)
-        //log.Printf("MIDI %v to port %s",mididata,port)
-        midi.Send(port,mididata)
+	mq, err := posixmq.Open("/"+port, posixmq.O_WRONLY | posixmq.O_CREAT, 0666, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer posixmq.Close(mq)
+	posixmq.Send(mq,mididata, 0)
 }

@@ -12,21 +12,16 @@ var Functions template.FuncMap
 func init() {
 	Functions = template.FuncMap{
 		"fonts": Fonts,
-		"channelfont": ChannelFont,
 		"fluidengine": GetEngine,
 		"fluidchannel": FluidChannel,
 	}
 }
 
-type ChannelRecord struct {
-	Host	string
-	Port	string
-	Channel string
-	Sfont	string
-	Bank	string
-	Preset	string
-	Volume	string
-}
+//type ChannelRecord struct {
+//	Host	string
+//	Port	string
+//	Channel string
+//}
 
 type InstrumentRecord struct {
 	Bank	string
@@ -51,43 +46,36 @@ type EngineRecord struct {
 	Host	string
 	Port	string
 	Fonts	map[string]FontRecord
-	Channels map[string]ChannelRecord
+//	Channels map[string]ChannelRecord
 }
 
 var engines	map[EngineKey]EngineRecord = make(map[EngineKey]EngineRecord)
 
-func FluidChannel(host string, port string, channel string) map[string]any {
+func FluidChannel(host string, port string, channel string,font string) map[string]any {
 	mChannel := make(map[string]any)
 	mChannel["host"] = host
 	mChannel["port"] = port
-	rEngine := getEngine(host,port)
-	rChannel, exists := rEngine.Channels[channel]
-	if !exists {
-		rChannel = ChannelRecord{}
-		rChannel.Channel = channel
-		rChannel.Sfont = "1"
-		rChannel.Bank = "0"
-		rChannel.Preset = "0"
-		rChannel.Volume = "0"
-	        FluidsynthCommand(host, port, "cc "+rChannel.Channel+" "+"7"+" "+rChannel.Volume)
-	        FluidsynthCommand(host, port, "select "+rChannel.Channel+" "+rChannel.Sfont+" "+rChannel.Bank+" "+rChannel.Preset)
-		rEngine.Channels[channel] = rChannel
-	}
-	mChannel["channel"] = rChannel.Channel
-	mChannel["volume"] = rChannel.Volume
-	mChannel["font"] = rChannel.Sfont
-	mChannel["bank"] = rChannel.Bank
-	mChannel["preset"] = rChannel.Preset
+//	rEngine := getEngine(host,port)
+//	rChannel, exists := rEngine.Channels[channel]
+//	if !exists {
+//		rChannel = ChannelRecord{}
+//		rChannel.Channel = channel
+//	        FluidsynthCommand(host, port, "select "+channel+" "+"1"+" "+"0"+" "+"0")
+//		rEngine.Channels[channel] = rChannel
+//	}
+//	mChannel["channel"] = rChannel.Channel
+	mChannel["channel"] = channel
+	mChannel["font"] = font
 	return mChannel
 }
 
-func getEngine(host string, port string) EngineRecord {
-	key := EngineKey{}
-	key.Host = host
-	key.Port = port
-	engine, _ := engines[key]
-	return engine
-}
+//func getEngine(host string, port string) EngineRecord {
+//	key := EngineKey{}
+//	key.Host = host
+//	key.Port = port
+//	engine, _ := engines[key]
+//	return engine
+//}
 
 func GetEngine(host string, port string) EngineRecord {
 	key := EngineKey{}
@@ -140,75 +128,11 @@ func GetEngine(host string, port string) EngineRecord {
 	}
 	engine.Fonts = fonts
 
-	channels := make(map[string]ChannelRecord)
-	response, err = FluidsynthCommand(host,port,"channels -verbose")
-	if err != nil {
-		log.Printf("fluidprogram error %v",err)
-	}
-	rows = strings.Split(string(response),"\n")
-	for _,row := range rows[:len(rows)-1] {
-		columns := strings.Split(row,",")
-		channel := ChannelRecord{}
-		channel.Host = host
-		channel.Port = port
-		for _, column := range columns {
-			fields := strings.Fields(column)
-			switch fields[0] {
-				case "chan":
-					channel.Channel = fields[1]
-				case "sfont":
-					channel.Sfont = fields[1]
-				case "bank":
-					channel.Bank = fields[1]
-				case "preset":
-					channel.Preset = fields[1]
-			}
-		}
-		channel.Volume = "0"
-	        FluidsynthCommand(host, port, "cc "+channel.Channel+" "+"7"+" "+channel.Volume)
-		channels[channel.Channel] = channel
-	}
-	engine.Channels = channels
+//	channels := make(map[string]ChannelRecord)
+//	engine.Channels = channels
 	engines[key] = engine
 
-	// Unison using fluidsynth router
-
-//	FluidsynthCommand(host, port, "router_clear")
-/*
-	FluidsynthCommand(host, port, "router_begin note")
-	FluidsynthCommand(host, port, "router_chan 0 7 0 0")
-	FluidsynthCommand(host, port, "router_end")
-	FluidsynthCommand(host, port, "router_begin note")
-	FluidsynthCommand(host, port, "router_chan 0 7 0 1")
-	FluidsynthCommand(host, port, "router_end")
-	FluidsynthCommand(host, port, "router_begin note")
-	FluidsynthCommand(host, port, "router_chan 0 7 0 2")
-	FluidsynthCommand(host, port, "router_end")
-	FluidsynthCommand(host, port, "router_begin note")
-	FluidsynthCommand(host, port, "router_chan 0 7 0 3")
-	FluidsynthCommand(host, port, "router_end")
-	FluidsynthCommand(host, port, "router_begin note")
-	FluidsynthCommand(host, port, "router_chan 0 7 0 4")
-	FluidsynthCommand(host, port, "router_end")
-	FluidsynthCommand(host, port, "router_begin note")
-	FluidsynthCommand(host, port, "router_chan 0 7 0 5")
-	FluidsynthCommand(host, port, "router_end")
-	FluidsynthCommand(host, port, "router_begin note")
-	FluidsynthCommand(host, port, "router_chan 0 7 0 6")
-	FluidsynthCommand(host, port, "router_end")
-	FluidsynthCommand(host, port, "router_begin note")
-	FluidsynthCommand(host, port, "router_chan 0 7 0 7")
-	FluidsynthCommand(host, port, "router_end")
-*/
 	return engine
-}
-
-func ChannelFont(channel ChannelRecord) FontRecord {
-	engineKey := EngineKey{}
-	engineKey.Host = channel.Host
-	engineKey.Port = channel.Port
-	engine := engines[engineKey]
-	return engine.Fonts[channel.Sfont]
 }
 
 func Fonts(host string, port string) map[string]FontRecord {

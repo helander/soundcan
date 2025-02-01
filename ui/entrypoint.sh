@@ -1,3 +1,7 @@
 #!/bin/sh
-pw-jack /go/bin/ui
+pw-midimq setbfree &
+pw-midimq foobar &
+
+./go/bin/ui
+
 sleep infinity

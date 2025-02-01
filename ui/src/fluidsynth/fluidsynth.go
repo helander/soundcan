@@ -5,12 +5,13 @@ import (
         "log"
 	"net"
 	"net/http"
-//	"path/filepath"
+	"sync"
 	"time"
 
 )
 
 var templates *template.Template
+var Mutex sync.Mutex
 
 func Include(t *template.Template) {
 	templates = t
@@ -25,6 +26,7 @@ func init() {
 }
 
 func postSettingHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNoContent)
 	host := r.PathValue("host")
 	port := r.PathValue("port")
 	setting := r.PathValue("setting")
@@ -34,11 +36,11 @@ func postSettingHandler(w http.ResponseWriter, r *http.Request) {
                 return
         }
         settingvalue := r.Form.Get("settingvalue")
-	response, err := FluidsynthCommand(host, port, "set "+setting+" "+settingvalue)
-	log.Printf("Error %v   Response %v %s", err, response,response)
+	FluidsynthCommand(host, port, "set "+setting+" "+settingvalue)
 }
 
 func postMidiccHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNoContent)
 	host := r.PathValue("host")
 	port := r.PathValue("port")
 	channel := r.PathValue("channel")
@@ -49,11 +51,11 @@ func postMidiccHandler(w http.ResponseWriter, r *http.Request) {
                 return
         }
         ccvalue := r.Form.Get("ccvalue")
-	response, err := FluidsynthCommand(host, port, "cc "+channel+" "+control+" "+ccvalue)
-	log.Printf("Error %v   Response %v %s", err, response, response)
+	FluidsynthCommand(host, port, "cc "+channel+" "+control+" "+ccvalue)
 }
 
 func postSetVolumeHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNoContent)
 	host := r.PathValue("host")
 	port := r.PathValue("port")
 	channel := r.PathValue("channel")
@@ -64,16 +66,12 @@ func postSetVolumeHandler(w http.ResponseWriter, r *http.Request) {
         }
         volume := r.Form.Get("volume")
 	FluidsynthCommand(host, port, "cc "+channel+" "+"7"+" "+volume)
-	engineKey := EngineKey{}
-	engineKey.Host = host
-	engineKey.Port = port
-	engine := engines[engineKey]
-        log.Printf("postSetVolumeHandler host %s port %s channel %s  engine %v", host, port, channel, engine)
-	channelRecord := engine.Channels[channel]
-        log.Printf("postSetVolumeHandler channelRecord %v", channelRecord)
-	channelRecord.Volume = volume
-	engine.Channels[channel] = channelRecord 
-        log.Printf("postSetVolumeHandler updated channelRecord %v", channelRecord)
+	//engineKey := EngineKey{}
+	//engineKey.Host = host
+	//engineKey.Port = port
+	//engine := engines[engineKey]
+	//channelRecord := engine.Channels[channel]
+	//engine.Channels[channel] = channelRecord 
 }
 
 
@@ -87,21 +85,30 @@ func postSelectFontHandler(w http.ResponseWriter, r *http.Request) {
                 return
         }
         font := r.Form.Get("font")
-	engineKey := EngineKey{}
-	engineKey.Host = host
-	engineKey.Port = port
-	engine := engines[engineKey]
-	channelRecord := engine.Channels[channel]
-	channelRecord.Sfont = font
-	engine.Channels[channel] = channelRecord 
-	FluidsynthCommand(host, port, "select "+channel+" "+font+" 0 0") 
-	err = templates.ExecuteTemplate(w, "fluidsynthchannel", channelRecord)
-	if err != nil {
-		log.Printf("Error executing fluidsynthchannel template %v", err)
+	//engineKey := EngineKey{}
+	//engineKey.Host = host
+	//engineKey.Port = port
+	//engine := engines[engineKey]
+	//channelRecord := engine.Channels[channel]
+	//engine.Channels[channel] = channelRecord 
+	log.Printf("Select Font %v",r.Form)
+        FluidsynthCommand(host, port, "select "+channel+" "+font+" 0 0") 
+	//if r.Form.Get("evtype") == "DOMContentLoaded" {
+	//	w.WriteHeader(http.StatusNoContent)
+	//	return
+	//}
+	if r.Form.Get("evtype") == "change" {
+	   err = templates.ExecuteTemplate(w, "fluidprogram", FluidChannel(host,port,channel,font))
+	   if err != nil {
+	   	log.Printf("Error executing fluidprogram template %v", err)
+	   }
+	   return
 	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func postSetBankPresetHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNoContent)
 	host := r.PathValue("host")
 	port := r.PathValue("port")
 	channel := r.PathValue("channel")
@@ -111,38 +118,39 @@ func postSetBankPresetHandler(w http.ResponseWriter, r *http.Request) {
                 return
         }
         bankpreset := r.Form.Get("bankpreset")
+	font := r.Form.Get("font")
 	bank := bankpreset[0:3]
 	preset := bankpreset[4:7]
-	engineKey := EngineKey{}
-	engineKey.Host = host
-	engineKey.Port = port
-	engine := engines[engineKey]
-	channelRecord := engine.Channels[channel]
-	channelRecord.Bank = bank
-	channelRecord.Preset = preset
-	engine.Channels[channel] = channelRecord 
-	FluidsynthCommand(host, port, "select "+channel+" "+channelRecord.Sfont+" "+bank+" "+preset) 
-	err = templates.ExecuteTemplate(w, "fluidsynthchannel", channelRecord)
-	if err != nil {
-		log.Printf("Error executing fluidsynthchannel template %v", err)
-	}
+	//engineKey := EngineKey{}
+	//engineKey.Host = host
+	//engineKey.Port = port
+	//engine := engines[engineKey]
+	//channelRecord := engine.Channels[channel]
+	//engine.Channels[channel] = channelRecord 
+	FluidsynthCommand(host, port, "select "+channel+" "+font+" "+bank+" "+preset) 
 }
 
 func FluidsynthCommand(host string, port string, command string) ([]byte, error) {
+	Mutex.Lock()
+	defer Mutex.Unlock()
+
 	log.Printf("Fluidsynth send: host %s port %s command %s", host, port, command)
 	tcpAddr, err := net.ResolveTCPAddr("tcp", host+":"+port)
 	if err != nil {
+		log.Printf("Error %v",err)
 		return nil, err
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
+		log.Printf("Error %v",err)
 		return nil, err
 	}
 	conn.SetReadDeadline(time.Now().Add(10 * time.Millisecond))
 
 	_, err = conn.Write([]byte(command + "\n"))
 	if err != nil {
+		log.Printf("Error %v",err)
 		return nil, err
 	}
 
@@ -155,6 +163,7 @@ func FluidsynthCommand(host string, port string, command string) ([]byte, error)
 		l, err := conn.Read(reply)
 		response = append(response, reply[:l]...)
 		if err != nil {
+			//log.Printf("Error %v",err)
 			goon = false
 		}
 

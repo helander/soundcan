@@ -1,7 +1,14 @@
-FROM golang:1.23 
+FROM debian:sid
 
 RUN apt update
-RUN apt install -y libjack-jackd2-dev pipewire-jack
+RUN apt install -y golang
+#RUN apt install -y libjack-jackd2-dev pipewire-jack
+RUN apt install -y libpipewire-0.3-dev
+RUN apt install -y pipewire
+
+COPY pw_midimq.c .
+RUN gcc -Wall pw_midimq.c -o /usr/bin/pw-midimq $(pkg-config --cflags --libs libpipewire-0.3)
+
 
 COPY src ./build/
 WORKDIR build
@@ -12,7 +19,6 @@ RUN go install ./...
 WORKDIR /root
 
 COPY img ./img/
-COPY js ./js
 COPY templates ./templates/
 COPY entrypoint.sh ./
 

@@ -3,11 +3,16 @@
 <html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <head>
-       <!--script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script-->
-       <!--script src="/js/htmx.js"></script-->
-       <script src="/js/htmx-lite.js"></script>
+       <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
        <script>
           //htmx.logAll();
+         function bugworkaround(e) {
+            let evtype = "unknown";
+            if (e !== undefined) {
+              evtype = event.type
+            }
+            return {evtype: evtype}
+         }
        </script>
 
        <style>
