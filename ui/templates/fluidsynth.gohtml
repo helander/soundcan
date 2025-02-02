@@ -161,11 +161,10 @@
 {{end}}
 
 {{define "fluidprogram"}}
-      <div>
+      <form>
         <select name="font" style="font-size: 0.8em;accent-color: green;" 
-                hx-post="/fluidsynth/{{.host}}/{{.port}}/selectfont/{{.channel}}" hx-target="closest div" hx-swap="outerHTML" hx-trigger="change,load" 
+                hx-post="/fluidsynth/{{.host}}/{{.port}}/selectfont/{{.channel}}" hx-target="closest form" hx-swap="outerHTML" hx-trigger="change,load" 
                 hx-ext="event-header"
-                hl-req="post" hl-url="/fluidsynth/{{.host}}/{{.port}}/selectfont/{{.channel}}" hl-target="div" hl-swap="outerHTML" hl-trigger="change,load"
         >
           {{$font:=.font}}
           {{range (fonts .host .port)}}
@@ -175,14 +174,13 @@
 
         <select  name="bankpreset"  style="font-size: 1em;accent-color: green;" 
                  hx-post="/fluidsynth/{{.host}}/{{.port}}/setbankpreset/{{.channel}}" hx-swap="none"
-                 hl-req="post" hl-url="/fluidsynth/{{.host}}/{{.port}}/setbankpreset/{{.channel}}" hl-target="div" hl-swap="none"
         >
           {{range (index (fonts .host .port) .font).Instruments}}
             {{$bp:=printf "%s-%s" .Bank .Preset}}
             <option value="{{$bp}}" >{{.Name}}</option>
           {{end}}
         </select>
-      </div>
+      </form>
 
 {{end}}
 
