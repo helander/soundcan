@@ -2,6 +2,6 @@
 pw-midimq setbfree &
 pw-midimq foobar &
 
-./go/bin/ui
+ui
 
 sleep infinity

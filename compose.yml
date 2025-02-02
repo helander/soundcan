@@ -29,6 +29,7 @@ services:
     volumes:
       - session:/session
       - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
+    ipc: "shareable"
 
   fs:
     build: fluidsynth
@@ -40,15 +41,13 @@ services:
       - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
       - $PWD/store:/soundfonts
 
-#  setbfree:
-#    build: setbfree
-#    restart: unless-stopped
-#    volumes:
-#      - session:/session
-#      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
-#    ports:
-#      - 3100:3100
-#      - 3101:3101
+  setbfree:
+    build: setbfree
+    restart: unless-stopped
+    volumes:
+      - session:/session
+      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
+    ipc: "service:ui"
 
 volumes:
   tools-data:

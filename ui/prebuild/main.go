@@ -32,7 +32,7 @@ func init() {
 
 
 func main(){
-	http.ListenAndServe(":3300",  logRequest(http.DefaultServeMux))
+	http.ListenAndServe(":3300", logRequest(http.DefaultServeMux))
 }
 
 

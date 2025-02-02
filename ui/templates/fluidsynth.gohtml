@@ -160,11 +160,11 @@
   </div>
 {{end}}
 
-
 {{define "fluidprogram"}}
       <div>
         <select name="font" style="font-size: 0.8em;accent-color: green;" 
-                hx-post="/fluidsynth/{{.host}}/{{.port}}/selectfont/{{.channel}}" hx-target="closest div" hx-swap="outerHTML" hx-trigger="change,load" hx-vals='js:{...bugworkaround(event)}' 
+                hx-post="/fluidsynth/{{.host}}/{{.port}}/selectfont/{{.channel}}" hx-target="closest div" hx-swap="outerHTML" hx-trigger="change,load" 
+                hx-ext="event-header"
                 hl-req="post" hl-url="/fluidsynth/{{.host}}/{{.port}}/selectfont/{{.channel}}" hl-target="div" hl-swap="outerHTML" hl-trigger="change,load"
         >
           {{$font:=.font}}
