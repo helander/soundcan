@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-        "github.com/helander/gopkg/fluidsynth"
+        "github.com/helander/soundcan/ui/fluidsynth"
         "github.com/helander/gopkg/posixmq"
 )
 
