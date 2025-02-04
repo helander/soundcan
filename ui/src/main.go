@@ -17,7 +17,7 @@ var templates *template.Template
 
 func init() {
         var err error
-        templates, err = template.New("dummy").Funcs(template.FuncMap{"map": CreateMap}).ParseGlob(filepath.Join("templates", "*.gohtml"))
+        templates, err = template.New("dummy").Funcs(template.FuncMap{"map": CreateMap, "value":ParamValue}).ParseGlob(filepath.Join("templates", "*.gohtml"))
         if err != nil {
                 log.Printf("Error creating templates %v", err)
         }
@@ -63,10 +63,11 @@ func serveMqMidiCC(w http.ResponseWriter, r *http.Request) {
                 return
 	}
         mididata := make([]byte,3)
-	ccvalue, _ := strconv.ParseFloat(r.Form.Get("ccvalue"), 64)
+	ccvalue := r.Form.Get("ccvalue")
+	value, _ := strconv.ParseFloat(ccvalue, 64)
         mididata[0] = 0xb0 | 0x0f & byte(channel)
         mididata[1] = byte(control)
-        mididata[2] = byte(int(math.Round(ccvalue)))
+        mididata[2] = byte(int(math.Round(value)))
 	log.Printf("mqmidicc: send %v to port %s",mididata,port)
 	mq, err := posixmq.Open("/"+port, posixmq.O_WRONLY | posixmq.O_CREAT, 0666, nil)
 	if err != nil {
@@ -74,6 +75,7 @@ func serveMqMidiCC(w http.ResponseWriter, r *http.Request) {
 	}
 	defer posixmq.Close(mq)
 	posixmq.Send(mq,mididata, 0)
+	parameters[port+"/midicc/"+r.PathValue("control")] = ccvalue
 }
 
 func CreateMap(values ...interface{}) (map[string]interface{}, error) {
@@ -89,4 +91,13 @@ func CreateMap(values ...interface{}) (map[string]interface{}, error) {
 		dict[key] = values[i+1]
 	}
 	return dict, nil
+}
+
+var parameters map[string]string = make(map[string]string)
+
+func ParamValue(parameterName string, defaultValue string) string {
+	value, exists := parameters[parameterName]
+	log.Printf("ParamValue: %s %s %s",parameterName,defaultValue,value)
+	if exists {return value}
+	return defaultValue
 }
