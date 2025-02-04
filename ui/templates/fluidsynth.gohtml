@@ -5,142 +5,26 @@
 
       <h5>Reverb</h5>
 
-      <form oninput="oput.value=settingslider.value">
-        <div style="display: flex;">
-	   <output style="width: 6em;text-align: left">Active</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">0</output>
-           <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue" style="width: 25%"
-                     value="0" min="0" max="1" step="1"
-                     hx-post="/fluidsynth/setting/synth.reverb.active" hx-swap="none" hx-trigger="input,load"  
-              />
-           </div>
-        </div>
-      </form>
+      {{template "fluidsettingslider" (map "text" "Active" "init" "0" "min" "0" "max" "1" "step" "1" "setting" "synth.reverb.active")}}
 
-      <form oninput="oput.value=settingslider.value">
-        <div style="display: flex;">
-	   <output style="width: 6em;text-align: left">Damp</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">0.29</output>
-           <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
-                     value="0.29" min="0" max="1" step="0.01"
-                     hx-post="/fluidsynth/setting/synth.reverb.damp" hx-swap="none" hx-trigger="input,load"  
-              />
-           </div>
-        </div>
-      </form>
+      {{template "fluidsettingslider" (map "text" "Damp" "init" "0.29" "min" "0" "max" "1" "step" "0.01" "setting" "synth.reverb.damp")}}
 
-      <form oninput="oput.value=settingslider.value">
-        <div style="display: flex;">
-	   <output style="width: 6em;text-align: left">Level</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">0.62</output>
-           <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
-                     value="0.62" min="0" max="1" step="0.01"
-                     hx-post="/fluidsynth/setting/synth.reverb.level" hx-swap="none" hx-trigger="input,load"  
-              />
-           </div>
-        </div>
-      </form>
+      {{template "fluidsettingslider" (map "text" "Level" "init" "0.62" "min" "0" "max" "1" "step" "0.01" "setting" "synth.reverb.level")}}
 
-      <form oninput="oput.value=settingslider.value">
-        <div style="display: flex;">
-	   <output style="width: 6em;text-align: left">Room size</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">0.71</output>
-           <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
-                     value="0.71" min="0" max="1" step="0.01"
-                     hx-post="/fluidsynth/setting/synth.reverb.room-size" hx-swap="none" hx-trigger="input,load"  
-              />
-           </div>
-        </div>
-      </form>
+      {{template "fluidsettingslider" (map "text" "Room size" "init" "0.71" "min" "0" "max" "1" "step" "0.01" "setting" "synth.reverb.room-size")}}
 
-      <form oninput="oput.value=settingslider.value">
-        <div style="display: flex;">
-	   <output style="width: 6em;text-align: left">Width</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">75</output>
-           <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
-                     value="75" min="0" max="100" step="1"
-                     hx-post="/fluidsynth/setting/synth.reverb.width" hx-swap="none" hx-trigger="input,load"  
-              />
-           </div>
-        </div>
-      </form>
-
+      {{template "fluidsettingslider" (map "text" "Width" "init" "75" "min" "0" "max" "100" "step" "1" "setting" "synth.reverb.width")}}
       <h5>Chorus</h5>
 
-      <form oninput="oput.value=settingslider.value">
-        <div style="display: flex;">
-	   <output style="width: 6em;text-align: left">Active</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">0</output>
-           <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue" style="width: 25%"
-                     value="0" min="0" max="1" step="1"
-                     hx-post="/fluidsynth/setting/synth.chorus.active" hx-swap="none" hx-trigger="input,load"  
-              />
-           </div>
-        </div>
-      </form>
+      {{template "fluidsettingslider" (map "text" "Active" "init" "0" "min" "0" "max" "1" "step" "1" "setting" "synth.chorus.active")}}
 
+      {{template "fluidsettingslider" (map "text" "Depth" "init" "3" "min" "0" "max" "256" "step" "1" "setting" "synth.chorus.depth")}}
 
-      <form oninput="oput.value=settingslider.value">
-        <div style="display: flex;">
-	   <output style="width: 6em;text-align: left">Depth</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">3</output>
-           <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
-                     value="3" min="0" max="256" step="1"
-                     hx-post="/fluidsynth/setting/synth.chorus.depth" hx-swap="none" hx-trigger="input,load"  
-              />
-           </div>
-        </div>
-      </form>
+      {{template "fluidsettingslider" (map "text" "Level" "init" "4.8" "min" "0" "max" "10" "step" "0.1" "setting" "synth.chorus.level")}}
 
+      {{template "fluidsettingslider" (map "text" "Voice count" "init" "2" "min" "0" "max" "99" "step" "1" "setting" "synth.chorus.nr")}}
 
-      <form oninput="oput.value=settingslider.value">
-        <div style="display: flex;">
-	   <output style="width: 6em;text-align: left">Level</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">4.8</output>
-           <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
-                     value="4.8" min="0" max="10" step="0.1"
-                     hx-post="/fluidsynth/setting/synth.chorus.level" hx-swap="none" hx-trigger="input,load"  
-              />
-           </div>
-        </div>
-      </form>
-
-
-      <form oninput="oput.value=settingslider.value">
-        <div style="display: flex;">
-	   <output style="width: 6em;text-align: left">Voice count</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">2</output>
-           <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
-                     value="2" min="0" max="99" step="1"
-                     hx-post="/fluidsynth/setting/synth.chorus.nr" hx-swap="none" hx-trigger="input,load"  
-              />
-           </div>
-        </div>
-      </form>
-
-
-      <form oninput="oput.value=settingslider.value">
-        <div style="display: flex;">
-	   <output style="width: 6em;text-align: left">Speed</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">1.3</output>
-           <div style="flex-grow: 1;">
-              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
-                     value="1.3" min="0.1" max="5" step="0.05"
-                     hx-post="/fluidsynth/setting/synth.chorus.speed" hx-swap="none" hx-trigger="input,load"  
-              />
-           </div>
-        </div>
-      </form>
-
+      {{template "fluidsettingslider" (map "text" "Speed" "init" "1.3" "min" "0.1" "max" "5" "step" "0.05" "setting" "synth.chorus.speed")}}
 
       <h5>Channels</h5>
       {{template "fluidchannel" (map "fonts" . "channel" "0")}}
@@ -149,6 +33,21 @@
       {{template "fluidchannel" (map "fonts" . "channel" "3")}}
 
   </div>
+{{end}}
+
+{{define "fluidsettingslider"}}
+      <form oninput="oput.value=settingslider.value">
+        <div style="display: flex;">
+	   <output style="width: 6em;text-align: left">{{.text}}</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">{{.init}}</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
+                     value="{{.init}}" min="{{.min}}" max="{{.max}}" step="{{.step}}"
+                     hx-post="/fluidsynth/setting/{{.setting}}" hx-swap="none" hx-trigger="input,load"  
+              />
+           </div>
+        </div>
+      </form>
 {{end}}
 
 {{define "fluidprogram"}}
