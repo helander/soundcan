@@ -1,0 +1,46 @@
+
+{{define "setbfree"}}
+  <div style="accent-color: green">
+      <h4>SetBFree Hammond B3 emulator</h4>
+
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Volume" "init" "100" "min" "0" "max" "127" "step" "1" "control" "7")}}
+
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 0" "init" "50" "min" "0" "max" "127" "step" "1" "control" "70")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 1" "init" "50" "min" "0" "max" "127" "step" "1" "control" "71")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 2" "init" "50" "min" "0" "max" "127" "step" "1" "control" "72")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 3" "init" "50" "min" "0" "max" "127" "step" "1" "control" "73")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 4" "init" "50" "min" "0" "max" "127" "step" "1" "control" "74")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 5" "init" "50" "min" "0" "max" "127" "step" "1" "control" "75")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 6" "init" "50" "min" "0" "max" "127" "step" "1" "control" "76")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 7" "init" "50" "min" "0" "max" "127" "step" "1" "control" "77")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 8" "init" "50" "min" "0" "max" "127" "step" "1" "control" "78")}}
+
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Overdrive" "init" "0" "min" "0" "max" "127" "step" "1" "control" "93")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Reverb mix" "init" "0" "min" "0" "max" "127" "step" "1" "control" "91")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Percussion enable" "init" "0" "min" "0" "max" "127" "step" "127" "control" "80")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Percussion volume" "init" "0" "min" "0" "max" "127" "step" "127" "control" "81")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Percussion decay" "init" "0" "min" "0" "max" "127" "step" "127" "control" "82")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Percussion harmonic" "init" "0" "min" "0" "max" "127" "step" "127" "control" "83")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Vibrato lower" "init" "0" "min" "0" "max" "127" "step" "127" "control" "30")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Vibrato upper" "init" "0" "min" "0" "max" "127" "step" "127" "control" "31")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Vibrato knob" "init" "0" "min" "0" "max" "127" "step" "25.4" "control" "92")}}
+     {{template "setbfreecontrol" (map "queue" .queue "text" "Rotary speed" "init" "0" "min" "0" "max" "127" "step" "63.5" "control" "1")}}
+
+
+  </div>
+{{end}}
+
+{{define "setbfreecontrol"}}
+     <form oninput="oput.value=slider.value">
+        <div style="display: flex;">
+	   <output style="width: 10em;text-align: left">{{.text}}</output>
+           <output for="slider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">{{.init}}</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="slider" name="ccvalue" style="width: 50%;accent-color: green;"
+                     value="{{.init}}" min="{{.min}}" max="{{.max}}" step="{{.step}}"
+                     hx-post="/midimq/{{.queue}}/midicc/0/{{.control}}" hx-swap="none" hx-trigger="input,load"  
+              />
+           </div>
+        </div>
+      </form>
+{{end}}

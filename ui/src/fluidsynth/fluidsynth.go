@@ -6,10 +6,13 @@ import (
         "log"
 	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
-
 )
+
+const host = "fs"
+const port = "9800"
 
 var templates *template.Template
 var Mutex sync.Mutex
@@ -19,16 +22,14 @@ func Include(t *template.Template) {
 }
 
 func init() {
-	http.HandleFunc("POST /fluidsynth/{host}/{port}/setting/{setting}", postSettingHandler)
-	http.HandleFunc("POST /fluidsynth/{host}/{port}/midicc/{channel}/{control}", postMidiccHandler)
-	http.HandleFunc("POST /fluidsynth/{host}/{port}/selectfont/{channel}", postSelectFontHandler)
-	http.HandleFunc("POST /fluidsynth/{host}/{port}/setbankpreset/{channel}", postSetBankPresetHandler)
+	http.HandleFunc("POST /fluidsynth/setting/{setting}", postSettingHandler)
+	http.HandleFunc("POST /fluidsynth/midicc/{channel}/{control}", postMidiccHandler)
+	http.HandleFunc("POST /fluidsynth/selectfont/{channel}", postSelectFontHandler)
+	http.HandleFunc("POST /fluidsynth/setbankpreset/{channel}", postSetBankPresetHandler)
 }
 
 func postSettingHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
-	host := r.PathValue("host")
-	port := r.PathValue("port")
 	setting := r.PathValue("setting")
         err := r.ParseForm()
         if err != nil {
@@ -41,8 +42,6 @@ func postSettingHandler(w http.ResponseWriter, r *http.Request) {
 
 func postMidiccHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
-	host := r.PathValue("host")
-	port := r.PathValue("port")
 	channel := r.PathValue("channel")
 	control := r.PathValue("control")
         err := r.ParseForm()
@@ -55,8 +54,6 @@ func postMidiccHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func postSelectFontHandler(w http.ResponseWriter, r *http.Request) {
-	host := r.PathValue("host")
-	port := r.PathValue("port")
 	channel := r.PathValue("channel")
         err := r.ParseForm()
         if err != nil {
@@ -73,7 +70,7 @@ func postSelectFontHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Triggering-event unmarshal error  %v",err)
 		} else {
 			if evt["type"] == "change" {
-	   			err = templates.ExecuteTemplate(w, "fluidprogram", FluidChannel(host,port,channel,font))
+	   			err = templates.ExecuteTemplate(w, "fluidprogram", map[string]interface{}{"fonts": Fonts, "font": font, "channel": channel})
 	   			if err != nil {
 	   				log.Printf("Error executing fluidprogram template %v", err)
 	   			}
@@ -86,8 +83,6 @@ func postSelectFontHandler(w http.ResponseWriter, r *http.Request) {
 
 func postSetBankPresetHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
-	host := r.PathValue("host")
-	port := r.PathValue("port")
 	channel := r.PathValue("channel")
         err := r.ParseForm()
         if err != nil {
@@ -142,5 +137,61 @@ func FluidsynthCommand(host string, port string, command string) ([]byte, error)
 
 	conn.Close()
 	return response, nil
+}
+
+type InstrumentRecord struct {
+	Bank	string
+	Preset	string
+	Name	string
+}
+
+type FontRecord struct {
+	Font	string
+	Filename string
+	Instruments []InstrumentRecord
+}
+
+var Fonts	map[string]FontRecord = make(map[string]FontRecord)
+
+func FetchFonts()  {
+
+	response, err := FluidsynthCommand(host,port,"fonts")
+	if err != nil {
+		log.Printf("fluidprogram error %v",err)
+	}
+
+	fonts := make(map[string]FontRecord)
+	rows := strings.Split(string(response),"\n")
+	for _,row := range rows[1:len(rows)-1] {
+		columns := strings.Fields(row)
+		font := FontRecord{}
+		font.Font = columns[0]
+		filename := columns[1]
+		font.Filename = filename[strings.LastIndex(filename, "/")+1:]
+		fonts[columns[0]] = font
+	}
+
+	for key,_ := range fonts {
+		response, err = FluidsynthCommand(host,port,"inst "+key)
+		if err != nil {
+			log.Printf("fluidprogram error %v",err)
+		}
+		rows = strings.Split(string(response),"\n")
+		instruments := make([]InstrumentRecord,0)
+		for _,row := range rows[:len(rows)-1] {
+			bank := row[0:3]
+			preset := row[4:7]
+			name := row[8:]
+			instrument := InstrumentRecord{}
+			instrument.Bank = bank
+			instrument.Preset = preset
+			instrument.Name = name
+			instruments = append(instruments, instrument)
+		}
+		font := fonts[key]
+		font.Instruments = instruments
+		fonts[key] = font
+	}
+	Fonts = fonts
 }
 

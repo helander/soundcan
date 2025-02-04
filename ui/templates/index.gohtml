@@ -22,7 +22,8 @@
 {{define "indexbody"}}
     <!--body id="bodyelement" hx-get="/indexbody" hx-trigger="every 60s" hx-swap="outerHTML"-->
     <body>
-       {{template "fluidsynth" (fluidengine "fs" "9800")}}
+       {{template "setbfree" (map "queue" "setbfree")}}
+       {{template "fluidsynth" .}}
 
     </body>
 

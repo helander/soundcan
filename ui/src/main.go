@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"html/template"
 	"log"
+	"math"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -15,7 +17,7 @@ var templates *template.Template
 
 func init() {
         var err error
-        templates, err = template.New("dummy").Funcs(fluidsynth.Functions).ParseGlob(filepath.Join("templates", "*.gohtml"))
+        templates, err = template.New("dummy").Funcs(template.FuncMap{"map": CreateMap}).ParseGlob(filepath.Join("templates", "*.gohtml"))
         if err != nil {
                 log.Printf("Error creating templates %v", err)
         }
@@ -23,7 +25,6 @@ func init() {
 
 	if templates != nil {
 		http.HandleFunc("/", serveIndexTemplate)
-		http.HandleFunc("/indexbody", serveIndexBodyTemplate)
 	}
         http.HandleFunc("/midimq/{port}/midicc/{channel}/{control}",serveMqMidiCC)
 	images := http.FileServer(http.Dir("ui/img"))
@@ -44,20 +45,15 @@ func logRequest(handler http.Handler) http.Handler {
 }
 
 func serveIndexTemplate(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "indexpage", "")
+	fluidsynth.FetchFonts()
+	err := templates.ExecuteTemplate(w, "indexpage", fluidsynth.Fonts)
 	if err != nil {
 		log.Printf("Error executing index template %v", err)
 	}
 }
 
-func serveIndexBodyTemplate(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "indexbody", "")
-	if err != nil {
-		log.Printf("Error executing indexbody template %v", err)
-	}
-}
-
 func serveMqMidiCC(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusNoContent)
 	port := r.PathValue("port")
 	channel, _ := strconv.Atoi(r.PathValue("channel"))
 	control, _ := strconv.Atoi(r.PathValue("control"))
@@ -67,14 +63,30 @@ func serveMqMidiCC(w http.ResponseWriter, r *http.Request) {
                 return
 	}
         mididata := make([]byte,3)
-        ccvalue, _ := strconv.Atoi(r.Form.Get("ccvalue"))
+	ccvalue, _ := strconv.ParseFloat(r.Form.Get("ccvalue"), 64)
         mididata[0] = 0xb0 | 0x0f & byte(channel)
         mididata[1] = byte(control)
-        mididata[2] = byte(ccvalue)
+        mididata[2] = byte(int(math.Round(ccvalue)))
+	log.Printf("mqmidicc: send %v to port %s",mididata,port)
 	mq, err := posixmq.Open("/"+port, posixmq.O_WRONLY | posixmq.O_CREAT, 0666, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer posixmq.Close(mq)
 	posixmq.Send(mq,mididata, 0)
+}
+
+func CreateMap(values ...interface{}) (map[string]interface{}, error) {
+	if len(values)%2 != 0 {
+		return nil, errors.New("invalid map call")
+	}
+	dict := make(map[string]interface{}, len(values)/2)
+	for i := 0; i < len(values); i += 2 {
+		key, ok := values[i].(string)
+		if !ok {
+			return nil, errors.New("map keys must be strings")
+		}
+		dict[key] = values[i+1]
+	}
+	return dict, nil
 }
