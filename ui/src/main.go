@@ -10,6 +10,7 @@ import (
 	"strconv"
 
         "github.com/helander/soundcan/ui/fluidsynth"
+        "github.com/helander/soundcan/ui/parameter"
         "github.com/helander/gopkg/posixmq"
 )
 
@@ -17,7 +18,7 @@ var templates *template.Template
 
 func init() {
         var err error
-        templates, err = template.New("dummy").Funcs(template.FuncMap{"map": CreateMap, "value":ParamValue}).ParseGlob(filepath.Join("templates", "*.gohtml"))
+        templates, err = template.New("dummy").Funcs(template.FuncMap{"map": CreateMap, "value": parameter.ParamValue, "parameterset": parameter.Selected, "fluidfonts": fluidsynth.Fonts}).ParseGlob(filepath.Join("templates", "*.gohtml"))
         if err != nil {
                 log.Printf("Error creating templates %v", err)
         }
@@ -27,6 +28,8 @@ func init() {
 		http.HandleFunc("/", serveIndexTemplate)
 	}
         http.HandleFunc("/midimq/{port}/midicc/{channel}/{control}",serveMqMidiCC)
+        http.HandleFunc("PUT /parameterset/active",serveParametersetActive)
+        http.HandleFunc("PUT /parameterset/stored",serveParametersetStored)
 	images := http.FileServer(http.Dir("ui/img"))
 	http.Handle("/img/", http.StripPrefix("/img/", images))
 }
@@ -46,7 +49,7 @@ func logRequest(handler http.Handler) http.Handler {
 
 func serveIndexTemplate(w http.ResponseWriter, r *http.Request) {
 	fluidsynth.FetchFonts()
-	err := templates.ExecuteTemplate(w, "indexpage", fluidsynth.Fonts)
+	err := templates.ExecuteTemplate(w, "indexpage", nil)
 	if err != nil {
 		log.Printf("Error executing index template %v", err)
 	}
@@ -75,8 +78,38 @@ func serveMqMidiCC(w http.ResponseWriter, r *http.Request) {
 	}
 	defer posixmq.Close(mq)
 	posixmq.Send(mq,mididata, 0)
-	parameters[port+"/midicc/"+r.PathValue("control")] = ccvalue
+	parameter.Assign(port+"/midicc/"+r.PathValue("control"), ccvalue)
 }
+
+
+func serveParametersetActive(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+                log.Printf("parametersetActive service: parse form error %v", err)
+        	w.WriteHeader(http.StatusNoContent)
+                return
+	}
+	parameterset := r.Form.Get("parameterset")
+	log.Printf("parametersetActive: form %s    %v",parameterset,r.Form)
+	parameter.Activate(parameterset)
+	err = templates.ExecuteTemplate(w, "indexbody", nil)
+	if err != nil {
+		log.Printf("Error executing index body template %v", err)
+	}
+}
+
+func serveParametersetStored(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusNoContent)
+	err := r.ParseForm()
+	if err != nil {
+                log.Printf("parametersetStored service: parse form error %v", err)
+                return
+	}
+	parameterset := r.Form.Get("parameterset")
+	log.Printf("parametersetStored: form %s    %v",parameterset,r.Form)
+	parameter.Store(parameterset)
+}
+
 
 func CreateMap(values ...interface{}) (map[string]interface{}, error) {
 	if len(values)%2 != 0 {
@@ -93,11 +126,3 @@ func CreateMap(values ...interface{}) (map[string]interface{}, error) {
 	return dict, nil
 }
 
-var parameters map[string]string = make(map[string]string)
-
-func ParamValue(parameterName string, defaultValue string) string {
-	value, exists := parameters[parameterName]
-	log.Printf("ParamValue: %s %s %s",parameterName,defaultValue,value)
-	if exists {return value}
-	return defaultValue
-}

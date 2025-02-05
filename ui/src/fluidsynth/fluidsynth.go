@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/helander/soundcan/ui/parameter"
 )
 
 const host = "fs"
@@ -38,6 +40,7 @@ func postSettingHandler(w http.ResponseWriter, r *http.Request) {
         }
         settingvalue := r.Form.Get("settingvalue")
 	FluidsynthCommand(host, port, "set "+setting+" "+settingvalue)
+	parameter.Assign("fluidsynth/setting/"+setting, settingvalue)
 }
 
 func postMidiccHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +54,7 @@ func postMidiccHandler(w http.ResponseWriter, r *http.Request) {
         }
         ccvalue := r.Form.Get("ccvalue")
 	FluidsynthCommand(host, port, "cc "+channel+" "+control+" "+ccvalue)
+	parameter.Assign("fluidsynth/midicc/"+channel+"/"+control, ccvalue)
 }
 
 func postSelectFontHandler(w http.ResponseWriter, r *http.Request) {
@@ -63,6 +67,8 @@ func postSelectFontHandler(w http.ResponseWriter, r *http.Request) {
         font := r.Form.Get("font")
 	log.Printf("Select Font %v",r.Form)
         FluidsynthCommand(host, port, "select "+channel+" "+font+" 0 0") 
+	parameter.Assign("fluidsynth/selectfont/"+channel, font)
+	parameter.Assign("fluidsynth/setbankpreset/"+channel, "000-000")
 	triggerEvent, exists := r.Header["Triggering-Event"]
 	if exists {
 		var evt map[string]interface{}
@@ -94,6 +100,7 @@ func postSetBankPresetHandler(w http.ResponseWriter, r *http.Request) {
 	bank := bankpreset[0:3]
 	preset := bankpreset[4:7]
 	FluidsynthCommand(host, port, "select "+channel+" "+font+" "+bank+" "+preset) 
+	parameter.Assign("fluidsynth/setbankpreset/"+channel, bankpreset)
 }
 
 func FluidsynthCommand(host string, port string, command string) ([]byte, error) {
@@ -151,7 +158,11 @@ type FontRecord struct {
 	Instruments []InstrumentRecord
 }
 
-var Fonts	map[string]FontRecord = make(map[string]FontRecord)
+var fontmap	map[string]FontRecord = make(map[string]FontRecord)
+
+func Fonts() map[string]FontRecord {
+	return fontmap
+}
 
 func FetchFonts()  {
 
@@ -192,6 +203,6 @@ func FetchFonts()  {
 		font.Instruments = instruments
 		fonts[key] = font
 	}
-	Fonts = fonts
+	fontmap = fonts
 }
 

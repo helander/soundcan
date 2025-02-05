@@ -22,8 +22,9 @@
 {{define "indexbody"}}
     <!--body id="bodyelement" hx-get="/indexbody" hx-trigger="every 60s" hx-swap="outerHTML"-->
     <body>
+       {{template "parameter"}}
        {{template "setbfree" (map "queue" "setbfree")}}
-       {{template "fluidsynth" .}}
+       {{template "fluidsynth" fluidfonts}}
 
     </body>
 

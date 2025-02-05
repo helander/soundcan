@@ -1,0 +1,17 @@
+
+{{define "parameter"}}
+      <form>
+
+        <select  name="parameterset"  style="font-size: 1em;accent-color: green;" >
+            <option value="paramset01" {{if eq "paramset01" parameterset}}selected {{end}}>Params 1</option>
+            <option value="paramset21" {{if eq "paramset02" parameterset}}selected {{end}}>Params 2</option>
+            <option value="paramset03" {{if eq "paramset03" parameterset}}selected {{end}}>Params 3</option>
+            <option value="paramset04" {{if eq "paramset04" parameterset}}selected {{end}}>Params 4</option>
+            <option value="paramset05" {{if eq "paramset05" parameterset}}selected {{end}}>Params 5</option>
+        </select>
+	<button hx-put="/parameterset/active" hx-swap="outerHTML" hx-target="body">Load</button>
+	<button hx-put="/parameterset/stored" hx-swap="none">Save</button>
+      </form>
+
+{{end}}
+

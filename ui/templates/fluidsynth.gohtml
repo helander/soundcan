@@ -36,13 +36,14 @@
 {{end}}
 
 {{define "fluidsettingslider"}}
+{{$init:=value (printf "fluidsynth/setting/%s" .setting) .init}}
       <form oninput="oput.value=settingslider.value">
         <div style="display: flex;">
 	   <output style="width: 6em;text-align: left">{{.text}}</output>
-           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">{{.init}}</output>
+           <output for="settingslider" name="oput" style="width: 4em;padding-right: 1em;text-align: right;">{{$init}}</output>
            <div style="flex-grow: 1;">
               <input type="range" id="settingslider" name="settingvalue" style="width: 50%"
-                     value="{{.init}}" min="{{.min}}" max="{{.max}}" step="{{.step}}"
+                     value="{{$init}}" min="{{.min}}" max="{{.max}}" step="{{.step}}"
                      hx-post="/fluidsynth/setting/{{.setting}}" hx-swap="none" hx-trigger="input,load"  
               />
            </div>
@@ -51,13 +52,14 @@
 {{end}}
 
 {{define "fluidprogram"}}
-      {{$font:=.font}}
+      {{$font:=value (printf "fluidsynth/selectfont/%s" .channel) .font}}
+      {{$bankpreset:=value (printf "fluidsynth/setbankpreset/%s" .channel) "000-000"}}
       <form>
         <select name="font" style="font-size: 0.8em;accent-color: green;" 
                 hx-post="/fluidsynth/selectfont/{{.channel}}" hx-target="closest form" hx-swap="outerHTML" hx-trigger="change,load" 
                 hx-ext="event-header"
         >
-          {{range .fonts}}
+          {{range fluidfonts}}
             <option value="{{.Font}}" {{if eq .Font $font}}selected {{end}}>{{.Filename}}</option>
           {{end}}
         </select>
@@ -65,9 +67,9 @@
         <select  name="bankpreset"  style="font-size: 1em;accent-color: green;" 
                  hx-post="/fluidsynth/setbankpreset/{{.channel}}" hx-swap="none"
         >
-          {{range (index .fonts $font).Instruments}}
+          {{range (index fluidfonts $font).Instruments}}
             {{$bp:=printf "%s-%s" .Bank .Preset}}
-            <option value="{{$bp}}" >{{.Name}}</option>
+            <option value="{{$bp}}"  {{if eq $bp $bankpreset}}selected {{end}}>{{.Name}}</option>
           {{end}}
         </select>
       </form>
@@ -78,39 +80,42 @@
   <div>
       <output>Channel {{.channel}}</output>
 
-      {{template "fluidprogram" (map "channel" .channel "font" "1" "fonts" .fonts)}}
+      {{template "fluidprogram" (map "channel" .channel "font" "1")}}
 
+      {{$volume:=value (printf "fluidsynth/midicc/%s/%s" .channel "7") "100"}}
       <form oninput="oput.value=volumeslider.value">
         <div style="display: flex;">
 	   <output style="width: 6em;text-align: left">Volume</output>
-           <output for="volumeslider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">100</output>
+           <output for="volumeslider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">{{$volume}}</output>
            <div style="flex-grow: 1;">
               <input type="range" id="volumeslider" name="ccvalue" style="width: 50%;accent-color: green;"
-                     value="100" min="0" max="127" step="1"
+                     value="{{$volume}}" min="0" max="127" step="1"
                      hx-post="/fluidsynth/midicc/{{.channel}}/7" hx-swap="none" hx-trigger="input,load"  
               />
            </div>
         </div>
       </form>
+      {{$reverb:=value (printf "fluidsynth/midicc/%s/%s" .channel "91") "100"}}
       <form oninput="oput.value=reverbslider.value">
         <div style="display: flex;">
 	   <output style="width: 6em;text-align: left">Reverb send</output>
-           <output for="reverbslider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">100</output>
+           <output for="reverbslider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">{{$reverb}}</output>
            <div style="flex-grow: 1;">
               <input type="range" id="reverbslider" name="ccvalue" style="width: 50%;accent-color: green;"
-                     value="100" min="0" max="127" step="1"
+                     value="{{$reverb}}" min="0" max="127" step="1"
                      hx-post="/fluidsynth/midicc/{{.channel}}/91" hx-swap="none" hx-trigger="input,load"  
               />
            </div>
         </div>
       </form>
+      {{$chorus:=value (printf "fluidsynth/midicc/%s/%s" .channel "93") "50"}}
       <form oninput="oput.value=chorusslider.value">
         <div style="display: flex;">
 	   <output style="width: 6em;text-align: left">Chorus send</output>
-           <output for="chorusslider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">50</output>
+           <output for="chorusslider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">{{$chorus}}</output>
            <div style="flex-grow: 1;">
               <input type="range" id="chorusslider" name="ccvalue" style="width: 50%;accent-color: green;"
-                     value="50" min="0" max="127" step="1"
+                     value="{{$chorus}}" min="0" max="127" step="1"
                      hx-post="/fluidsynth/midicc/{{.channel}}/93" hx-swap="none" hx-trigger="input,load"  
               />
            </div>
