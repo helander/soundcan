@@ -5,15 +5,16 @@
 
      {{template "setbfreecontrol" (map "queue" .queue "text" "Volume" "init" "100" "min" "0" "max" "127" "step" "1" "control" "7")}}
 
-     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 0" "init" "50" "min" "0" "max" "127" "step" "1" "control" "70")}}
-     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 1" "init" "50" "min" "0" "max" "127" "step" "1" "control" "71")}}
-     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 2" "init" "50" "min" "0" "max" "127" "step" "1" "control" "72")}}
-     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 3" "init" "50" "min" "0" "max" "127" "step" "1" "control" "73")}}
-     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 4" "init" "50" "min" "0" "max" "127" "step" "1" "control" "74")}}
-     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 5" "init" "50" "min" "0" "max" "127" "step" "1" "control" "75")}}
-     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 6" "init" "50" "min" "0" "max" "127" "step" "1" "control" "76")}}
-     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 7" "init" "50" "min" "0" "max" "127" "step" "1" "control" "77")}}
-     {{template "setbfreecontrol" (map "queue" .queue "text" "Upper drawbar 8" "init" "50" "min" "0" "max" "127" "step" "1" "control" "78")}}
+     {{template "setbfreedrawbar" (map "queue" .queue "text" "Upper drawbar 0" "init" "8" "min" "0" "max" "8" "step" "0.01" "control" "70")}}
+     {{template "setbfreedrawbar" (map "queue" .queue "text" "Upper drawbar 1" "init" "0" "min" "0" "max" "8" "step" "0.01" "control" "71")}}
+     {{template "setbfreedrawbar" (map "queue" .queue "text" "Upper drawbar 2" "init" "8" "min" "0" "max" "8" "step" "0.01" "control" "72")}}
+     {{template "setbfreedrawbar" (map "queue" .queue "text" "Upper drawbar 3" "init" "8" "min" "0" "max" "8" "step" "0.01" "control" "73")}}
+     {{template "setbfreedrawbar" (map "queue" .queue "text" "Upper drawbar 4" "init" "0" "min" "0" "max" "8" "step" "0.01" "control" "74")}}
+     {{template "setbfreedrawbar" (map "queue" .queue "text" "Upper drawbar 5" "init" "0" "min" "0" "max" "8" "step" "0.01" "control" "75")}}
+     {{template "setbfreedrawbar" (map "queue" .queue "text" "Upper drawbar 6" "init" "0" "min" "0" "max" "8" "step" "0.01" "control" "76")}}
+     {{template "setbfreedrawbar" (map "queue" .queue "text" "Upper drawbar 7" "init" "0" "min" "0" "max" "8" "step" "0.01" "control" "77")}}
+     {{template "setbfreedrawbar" (map "queue" .queue "text" "Upper drawbar 8" "init" "0" "min" "0" "max" "8" "step" "0.01" "control" "78")}}
+
 
      {{template "setbfreecontrol" (map "queue" .queue "text" "Overdrive" "init" "0" "min" "0" "max" "127" "step" "1" "control" "93")}}
      {{template "setbfreecontrol" (map "queue" .queue "text" "Reverb mix" "init" "0" "min" "0" "max" "127" "step" "1" "control" "91")}}
@@ -31,7 +32,7 @@
 {{end}}
 
 {{define "setbfreecontrol"}}
-     {{$init:=value (printf "%s/midicc/%s" .queue .control) .init}}
+     {{$init:=value (printf "%s/midicc/0/%s" .queue .control) .init}}
      <form oninput="oput.value=slider.value">
         <div style="display: flex;">
 	   <output style="width: 10em;text-align: left">{{.text}}</output>
@@ -39,7 +40,24 @@
            <div style="flex-grow: 1;">
               <input type="range" id="slider" name="ccvalue" style="width: 50%;accent-color: green;"
                      value="{{$init}}" min="{{.min}}" max="{{.max}}" step="{{.step}}"
-                     hx-post="/midimq/{{.queue}}/midicc/0/{{.control}}" hx-swap="none" hx-trigger="input,load"  
+                     hx-post="/midimq/{{.queue}}/midicc/0/{{.control}}" hx-swap="none" hx-trigger="input,load"  hx-include="closest input[step]"
+              />
+           </div>
+        </div>
+      </form>
+{{end}}
+
+{{define "setbfreedrawbar"}}
+     {{$init:=value (printf "%s/drawbarmidicc/0/%s" .queue .control) .init}}
+     <form oninput="oput.value=Number(slider.value).toFixed(0)">
+        <div style="display: flex;">
+	   <output style="width: 10em;text-align: left">{{.text}}</output>
+           <output for="slider" name="oput" style="width: 7em;padding-right: 1em;text-align: right;">{{$init}}</output>
+           <div style="flex-grow: 1;">
+              <input type="range" id="slider" name="ccvalue" style="width: 50%;accent-color: green;"
+                     value="{{$init}}" min="{{.min}}" max="{{.max}}" step="{{.step}}"
+                     hx-post="/midimq/{{.queue}}/drawbarmidicc/0/{{.control}}" hx-swap="none" hx-trigger="input,load"
+                     hx-vals='js:{min: {{.min}},max: {{.max}},step: {{.step}}}'
               />
            </div>
         </div>

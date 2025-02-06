@@ -28,6 +28,7 @@ func init() {
 		http.HandleFunc("/", serveIndexTemplate)
 	}
         http.HandleFunc("/midimq/{port}/midicc/{channel}/{control}",serveMqMidiCC)
+        http.HandleFunc("/midimq/{port}/drawbarmidicc/{channel}/{control}",serveMqDrawbarMidiCC)
         http.HandleFunc("PUT /parameterset/active",serveParametersetActive)
         http.HandleFunc("PUT /parameterset/stored",serveParametersetStored)
 	images := http.FileServer(http.Dir("ui/img"))
@@ -80,6 +81,37 @@ func serveMqMidiCC(w http.ResponseWriter, r *http.Request) {
 	posixmq.Send(mq,mididata, 0)
 	parameter.Assign(port+"/midicc/"+r.PathValue("control"), ccvalue)
 }
+
+func serveMqDrawbarMidiCC(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusNoContent)
+	port := r.PathValue("port")
+	channel, _ := strconv.Atoi(r.PathValue("channel"))
+	control, _ := strconv.Atoi(r.PathValue("control"))
+	err := r.ParseForm()
+	if err != nil {
+                log.Printf("drawbarmidiCC service: parse form error %v", err)
+                return
+	}
+        mididata := make([]byte,3)
+	ccvalue := r.Form.Get("ccvalue")
+	value, _ := strconv.ParseFloat(ccvalue, 64)
+	//min, _ := strconv.ParseFloat(r.Form.Get("min"), 64)
+	//max, _ := strconv.ParseFloat(r.Form.Get("max"), 64)
+	//step, _ := strconv.ParseFloat(r.Form.Get("step"), 64)
+        mididata[0] = 0xb0 | 0x0f & byte(channel)
+        mididata[1] = byte(control)
+        mididata[2] = byte(int(math.Round(127.0*(1.0-value/8.0))))
+	log.Printf("mqdrawbarmidicc: send %v to port %s",mididata,port)
+	mq, err := posixmq.Open("/"+port, posixmq.O_WRONLY | posixmq.O_CREAT, 0666, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer posixmq.Close(mq)
+	posixmq.Send(mq,mididata, 0)
+	parameter.Assign(port+"/drawbarmidicc/"+r.PathValue("channel")+"/"+r.PathValue("control"), ccvalue)
+}
+
+
 
 
 func serveParametersetActive(w http.ResponseWriter, r *http.Request) {
