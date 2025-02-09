@@ -31,34 +31,32 @@ services:
       - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
     ipc: "shareable"
 
-  ls:
-    build: ls
-    restart: unless-stopped
-    ports:
-      - 8888:8888
-    volumes:
-      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
-      - $PWD/SF2:/SF2
-      - $PWD/GIG:/GIG
+#  ls:
+#    build: ls
+#    restart: unless-stopped
+#    ports:
+#      - 8888:8888
+#    volumes:
+#      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
+#      - $PWD/SF2:/SF2
+#      - $PWD/GIG:/GIG
 
   sfizz:
     build: sfizz
     restart: unless-stopped
     volumes:
       - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
-      - $PWD/SF2:/SF2
-      - $PWD/GIG:/GIG
       - $PWD/SFZ:/SFZ
 
-  fs:
-    build: fluidsynth
-    restart: unless-stopped
-    ports:
-      - 9800:9800
-    volumes:
-      - session:/session
-      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
-      - $PWD/SF2:/SF2
+#  fs:
+#    build: fluidsynth
+#    restart: unless-stopped
+#    ports:
+#      - 9800:9800
+#    volumes:
+#      - session:/session
+#      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
+#      - $PWD/SF2:/SF2
 
   setbfree:
     build: setbfree
