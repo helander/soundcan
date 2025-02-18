@@ -74,3 +74,5 @@ extern struct wip_plugin *wip_plugin_load(const char *plugin_uri);
 extern void midiport_write(struct wip_port *port, uint8_t *mididata, int midibytes, long evtime, int *offset);
 extern void midiport_clear(struct wip_port *port);
 
+extern int atomChunkUri();
+extern int midiEventUri();

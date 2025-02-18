@@ -164,9 +164,24 @@ xdone:
 	}
 
 
+	// Prepare outputs
 
-
-
+	for(int i = 0; i < data->desc->n_ports; i++) {
+		struct wip_port *port = &data->desc->ports[i];
+		pw_log_info("wip on process port #%d",i);
+		if (WIP_IS_PORT_OUTPUT(port->flags)) {
+			if (WIP_IS_PORT_CONTROL(port->flags)) {
+				//pw_log_info("wip on process control port ");
+			} else if (WIP_IS_PORT_AUDIO(port->flags)) {
+				//pw_log_info("wip on process audio port ");
+			} else {
+				//pw_log_info("wip on process atom port ");
+				LV2_Atom_Sequence* aseq = (LV2_Atom_Sequence *)port->atomBuffer;
+    				aseq->atom.size = 1024;
+    				aseq->atom.type = atomChunkUri();
+			}
+		}
+	}
 
 	pw_log_info("wip on process ports done");
 	data->desc->run(data->instance, outsize / sizeof(float));
@@ -187,7 +202,24 @@ xdone:
 				pw_log_info("wip on process atom port ");
 				LV2_Atom_Sequence* aseq = (LV2_Atom_Sequence *)port->atomBuffer;
 				LV2_Atom_Event* aev = (LV2_Atom_Event*)((char*)LV2_ATOM_CONTENTS(LV2_Atom_Sequence, aseq) );
+
 				//...
+				if (aseq->atom.size > sizeof(LV2_Atom_Sequence) ) {
+					long payloadSize = aseq->atom.size - sizeof(LV2_Atom_Sequence);
+					printf("\npayload size %d",payloadSize);fflush(stdout);
+					while(payloadSize > (long)sizeof(LV2_Atom_Event)) {
+						printf("\n	aev type %d    size %d",aev->body.type,aev->body.size);fflush(stdout);
+						if (aev->body.type == midiEventUri()) {
+							uint8_t *mididata = (uint8_t *)aev + sizeof(LV2_Atom_Event);
+							printf("\nmidi event  %d   %02x",aev->body.size,mididata[0]);fflush(stdout);
+						}
+						int eventSize = lv2_atom_pad_size(sizeof(LV2_Atom_Event)) + lv2_atom_pad_size(aev->body.size);
+						char *next = ((char *)aev) + eventSize;
+						payloadSize = payloadSize - eventSize;
+						aev = (LV2_Atom_Event *) next;
+						//printf("\n	payload size %ld   event size %d        %d",payloadSize,eventSize,sizeof(LV2_Atom_Event));fflush(stdout);
+					}
+				}
 /*
 LV2_Atom_Sequence* aseq = (LV2_Atom_Sequence *)port->atomBuffer;
   if (ATOM_BUFFER_SIZE - sizeof(LV2_Atom) - aseq->atom.size < sizeof(LV2_Atom_Event) + midibytes) {

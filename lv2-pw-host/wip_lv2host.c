@@ -121,6 +121,7 @@ struct context {
 	LV2_URID atom_Float;
 	LV2_Atom_Forge forge;
 	LV2_URID midi_MidiEvent;
+	LV2_URID atom_Chunk;
 };
 
 
@@ -195,6 +196,7 @@ static struct context *context_new()
 	c->atom_Float = context_map(c, LV2_ATOM__Float);
 	lv2_atom_forge_init(&c->forge, &c->map);
 	c->midi_MidiEvent = context_map(c, LV2_MIDI__MidiEvent);
+	c->atom_Chunk = context_map(c, LV2_ATOM__Chunk);
 
 //	c->data_loop = spa_support_find(support, n_support, SPA_TYPE_INTERFACE_DataLoop);
 //	c->main_loop = spa_support_find(support, n_support, SPA_TYPE_INTERFACE_Loop);
@@ -355,6 +357,7 @@ static void *lv2_instantiate(const struct wip_descriptor *desc,
 		const LilvPort *port = lilv_plugin_get_port_by_index(p->p, n);
 		if (lilv_port_is_a(p->p, port, c->atom_AtomPort)) {
 			lilv_instance_connect_port(i->instance, n, &(desc->ports[n].atomBuffer[0]));
+			printf("\natom port %d at %llx ", n, &(desc->ports[n].atomBuffer[0]));fflush(stdout);
 			//lilv_instance_connect_port(i->instance, n, &i->empty_atom);
 		}
 	}
@@ -523,6 +526,16 @@ error_unref:
 	context_unref(c);
 	errno = -res;
 	return NULL;
+}
+
+int atomChunkUri()
+{
+	return _context->atom_Chunk; 
+}
+
+int midiEventUri()
+{
+	return _context->midi_MidiEvent; 
 }
 
 void midiport_clear(struct wip_port *port /*,long evtime*/)
