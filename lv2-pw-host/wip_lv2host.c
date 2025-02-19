@@ -357,7 +357,7 @@ static void *lv2_instantiate(const struct wip_descriptor *desc,
 		const LilvPort *port = lilv_plugin_get_port_by_index(p->p, n);
 		if (lilv_port_is_a(p->p, port, c->atom_AtomPort)) {
 			lilv_instance_connect_port(i->instance, n, &(desc->ports[n].atomBuffer[0]));
-			printf("\natom port %d at %llx ", n, &(desc->ports[n].atomBuffer[0]));fflush(stdout);
+			//printf("\natom port %d at %llx ", n, &(desc->ports[n].atomBuffer[0]));fflush(stdout);
 			//lilv_instance_connect_port(i->instance, n, &i->empty_atom);
 		}
 	}
@@ -390,9 +390,9 @@ static void lv2_deactivate(void *instance)
 	lilv_instance_deactivate(i->instance);
 }
 
-static void lv2_run(void *instance, unsigned long SampleCount)
+static void lv2_run(const void *instance, unsigned long SampleCount)
 {
-	struct instance *i = instance;
+	const struct instance *i = instance;
 	lilv_instance_run(i->instance, SampleCount);
 	if (i->work_iface != NULL && i->work_iface->end_run != NULL)
 		i->work_iface->end_run(i->instance);
@@ -406,7 +406,7 @@ static void lv2_free(const struct wip_descriptor *desc)
 	free(d);
 }
 
-static const struct wip_descriptor *lv2_make_desc(struct wip_plugin *plugin, const char *name)
+static const struct wip_descriptor *lv2_make_desc(const struct wip_plugin *plugin, const char *name)
 {
 	struct plugin *p = (struct plugin *)plugin;
 	struct context *c = p->c;

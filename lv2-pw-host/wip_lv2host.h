@@ -2,7 +2,7 @@
 #define ATOM_BUFFER_SIZE 0x2000
 
 struct wip_plugin {
-	const struct wip_descriptor *(*make_desc)(struct wip_plugin *plugin, const char *name);
+	const struct wip_descriptor *(*make_desc)(const struct wip_plugin *plugin, const char *name);
 	void (*unload) (struct wip_plugin *plugin);
 };
 
@@ -53,7 +53,7 @@ struct wip_descriptor {
 	void (*activate) (void *instance);
 	void (*deactivate) (void *instance);
 
-	void (*run) (void *instance, unsigned long SampleCount);
+	void (*run) (const void *instance, unsigned long SampleCount);
 };
 
 
