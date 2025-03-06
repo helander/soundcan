@@ -49,7 +49,7 @@ func logRequest(handler http.Handler) http.Handler {
 }
 
 func serveIndexTemplate(w http.ResponseWriter, r *http.Request) {
-	fluidsynth.FetchFonts()
+///////	fluidsynth.FetchFonts()
 	err := templates.ExecuteTemplate(w, "indexpage", nil)
 	if err != nil {
 		log.Printf("Error executing index template %v", err)

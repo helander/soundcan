@@ -25,8 +25,9 @@
     <body>
        {{template "parameter"}}
        {{template "setbfree" (map "queue" "setbfree")}}
-       {{template "fluidsynth" fluidfonts}}
-
+       {{template "sfizz" (map "queue" "sfizz1")}}
+       {{template "sfizz" (map "queue" "sfizz2")}}
+<!-- template "fluidsynth" fluidfonts -->
     </body>
 
 {{end}}

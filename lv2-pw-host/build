@@ -1,1 +1,0 @@
-gcc -Wall main.c wip_lv2host.c -o lph $(pkg-config --cflags --libs libpipewire-0.3 lilv-0) 

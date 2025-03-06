@@ -158,9 +158,12 @@ type FontRecord struct {
 	Instruments []InstrumentRecord
 }
 
-var fontmap	map[string]FontRecord = make(map[string]FontRecord)
+var fontmap	map[string]FontRecord = nil
 
 func Fonts() map[string]FontRecord {
+	if fontmap == nil {
+		FetchFonts()
+	}
 	return fontmap
 }
 

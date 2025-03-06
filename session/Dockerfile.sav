@@ -1,0 +1,34 @@
+FROM soundcan-images-base AS base
+ARG DEBIAN_FRONTEND=noninteractive
+##########################################
+# Environment 
+##########################################
+ENV DISPLAY=desktop:0
+ENV XDG_RUNTIME_DIR=/tmp
+##########################################
+# Runtime dependencies 
+##########################################
+RUN apt install -y pipewire-jack
+RUN apt install -y zenity
+RUN apt install -y lilv-utils
+RUN apt install -y nano
+##########################################
+# components 
+##########################################
+FROM soundcan-images-sfizz AS sfizz
+FROM soundcan-images-galv AS galv
+FROM scratch
+COPY --from=base / /
+COPY --from=sfizz / /
+COPY --from=galv / /
+##########################################
+# Startup
+##########################################
+ADD entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+##########################################
+# Environment 
+##########################################
+ENV DISPLAY=desktop:0
+ENV XDG_RUNTIME_DIR=/tmp
+ENV LV2_PATH=/usr/lib/lv2:/SFZ/PRESETS

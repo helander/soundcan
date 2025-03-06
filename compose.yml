@@ -2,7 +2,6 @@
 
 services:
 
-  # dela upp desktop i xserver vncserver och desktop med 1 process i varje
   desktop:
     build: desktop
     restart: unless-stopped
@@ -21,15 +20,15 @@ services:
       - /dev/snd:/dev/snd
 
 
-  ui:
-    build: ui
-    restart: unless-stopped
-    ports:
-      - 9999:3300
-    volumes:
-      - session:/session
-      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
-    ipc: "shareable"
+#  ui:
+#    build: ui
+#    restart: unless-stopped
+#    ports:
+#      - 9999:3300
+#    volumes:
+#      - session:/session
+#      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
+#    ipc: "shareable"
 
 #  ls:
 #    build: ls
@@ -41,12 +40,21 @@ services:
 #      - $PWD/SF2:/SF2
 #      - $PWD/GIG:/GIG
 
-  sfizz:
-    build: sfizz
+  session:
+    build: session
     restart: unless-stopped
     volumes:
       - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
       - $PWD/SFZ:/SFZ
+
+#  sfizz:
+#    build: sfizz
+#    restart: unless-stopped
+#    volumes:
+#      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
+#      - $PWD/SFZ:/SFZ
+#    devices:
+#      - /dev/snd:/dev/snd
 
 #  fs:
 #    build: fluidsynth
@@ -58,13 +66,20 @@ services:
 #      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
 #      - $PWD/SF2:/SF2
 
-  setbfree:
-    build: setbfree
-    restart: unless-stopped
-    volumes:
-      - session:/session
-      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
-    ipc: "service:ui"
+#  setbfree:
+#    build: setbfree
+#    restart: unless-stopped
+#    volumes:
+#      - session:/session
+#      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
+#    ipc: "service:ui"
+
+#  galv:
+#    build: galv
+#    restart: unless-stopped
+#    volumes:
+#      - session:/session
+#      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
 
 volumes:
   tools-data:

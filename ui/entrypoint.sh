@@ -1,6 +1,7 @@
 #!/bin/sh
 pw-midimq setbfree &
-pw-midimq foobar &
+pw-midimq sfizz1 &
+pw-midimq sfizz2 &
 
 ui
 
