@@ -39,6 +39,7 @@ services:
 #      - $XDG_RUNTIME_DIR/pipewire-0:/tmp/pipewire-0
 #      - $PWD/SF2:/SF2
 #      - $PWD/GIG:/GIG
+#      - $PWD/SFZ:/SFZ
 
   session:
     build: session

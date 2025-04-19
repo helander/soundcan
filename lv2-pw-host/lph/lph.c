@@ -332,7 +332,7 @@ void lph_thread_loop(void* plugin, void *preset, char* instanceName, int sampleR
         port->methods.setup(data.instance.instance, port, data.filter);
     }
 
-    //lilv_instance_activate(data.instance.instance);
+    lilv_instance_activate(data.instance.instance);
     pthread_mutex_unlock(&lock);
 
     pw_thread_loop_wait(data.loop);
