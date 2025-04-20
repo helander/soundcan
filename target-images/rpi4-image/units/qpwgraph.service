@@ -1,0 +1,13 @@
+[Unit]
+Description=Pipewire connection GUI
+After=labwc.service
+Wants=labwc.service
+
+[Service]
+Environment=WAYLAND_DISPLAY="wayland-0"
+ExecStart=/usr/bin/qpwgraph
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

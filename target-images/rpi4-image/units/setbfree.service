@@ -1,0 +1,12 @@
+[Unit]
+Description=setBfree Hammond B3 organ
+After=pipewire.socket
+Wants=pipewire.socket
+
+[Service]
+ExecStart=/usr/bin/pw-jack setBfree
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

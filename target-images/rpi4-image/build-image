@@ -1,0 +1,3 @@
+rm soundcan-rpi4.img  build-image.log
+vmdb2 --rootfs-tarball=cached-rootfs.tar.gz --log build-image.log --output soundcan-rpi4.img image.yaml 
+

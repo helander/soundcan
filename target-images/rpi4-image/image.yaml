@@ -1,0 +1,229 @@
+---
+# See https://wiki.debian.org/RaspberryPi3 for known issues and more details.
+# image.yml based on revision: ff7fdbf (Switch from qemu-debootstrap to debootstrap., 2024-01-01)
+
+steps:
+  - mkimg: "{{ output }}"
+    size: 4G
+
+  - mklabel: msdos
+    device: "{{ output }}"
+
+  - mkpart: primary
+    fs-type: 'fat32'
+    device: "{{ output }}"
+    start: 4MiB
+    end: 512MiB
+    tag: tag-firmware
+
+  - mkpart: primary
+    device: "{{ output }}"
+    start: 512MiB
+    end: 100%
+    tag: tag-root
+
+  - kpartx: "{{ output }}"
+
+  - mkfs: vfat
+    partition: tag-firmware
+    label: RASPIFIRM
+
+  - mkfs: ext4
+    partition: tag-root
+    label: RASPIROOT
+
+  - mount: tag-root
+
+  - mount: tag-firmware
+    mount-on: tag-root
+    dirname: '/boot/firmware'
+
+  - unpack-rootfs: tag-root
+
+  - debootstrap: trixie
+    require_empty_target: false
+    mirror: http://deb.debian.org/debian
+    target: tag-root
+    arch: arm64
+    components:
+      - main
+      - non-free-firmware
+      - non-free
+    unless: rootfs_unpacked
+
+  - create-file: /etc/apt/sources.list
+    contents: |+
+      deb http://deb.debian.org/debian trixie main non-free-firmware non-free
+      deb http://deb.debian.org/debian trixie-updates main non-free-firmware non-free
+      deb http://security.debian.org/debian-security trixie-security main non-free-firmware non-free
+      # Backports are _not_ enabled by default.
+      # Enable them by uncommenting the following line:
+      # deb http://deb.debian.org/debian trixie-backports main non-free-firmware
+
+    unless: rootfs_unpacked
+
+  - copy-file: /etc/initramfs-tools/hooks/rpi-resizerootfs
+    src: rootfs/etc/initramfs-tools/hooks/rpi-resizerootfs
+    perm: 0755
+    unless: rootfs_unpacked
+
+  - copy-file: /etc/initramfs-tools/scripts/local-bottom/rpi-resizerootfs
+    src: rootfs/etc/initramfs-tools/scripts/local-bottom/rpi-resizerootfs
+    perm: 0755
+    unless: rootfs_unpacked
+
+  - apt: install
+    packages:
+      - ca-certificates
+      - dosfstools
+      - iw
+      - parted
+      - ssh
+      - wpasupplicant
+      - systemd-timesyncd
+      - linux-image-rt-arm64
+      - raspi-firmware
+      - firmware-brcm80211
+      - bluez-firmware
+      - sudo
+      - locales-all
+      - tzdata
+      - alsa-utils
+      - pipewire
+      - pipewire-jack
+      - wireplumber
+      - labwc
+      - wayvnc
+      - foot
+      - xwayland
+      - qpwgraph
+      - setbfree
+      - git
+      - build-essential
+      - pkg-config 
+      - cmake
+      - clang
+      - meson
+      - ninja-build
+    tag: tag-root
+    unless: rootfs_unpacked
+
+  - cache-rootfs: tag-root
+    unless: rootfs_unpacked
+
+  - shell: |
+      echo "soundcan" > "${ROOT?}/etc/hostname"
+
+      # Allow root logins locally with no password
+      sed -i 's,root:[^:]*:,root::,' "${ROOT?}/etc/shadow"
+
+      install -m 644 -o root -g root rootfs/etc/fstab "${ROOT?}/etc/fstab"
+
+      install -m 644 -o root -g root rootfs/etc/network/interfaces.d/eth0 "${ROOT?}/etc/network/interfaces.d/eth0"
+      install -m 600 -o root -g root rootfs/etc/network/interfaces.d/wlan0 "${ROOT?}/etc/network/interfaces.d/wlan0"
+
+      install -m 755 -o root -g root rootfs/usr/local/sbin/rpi-set-sysconf "${ROOT?}/usr/local/sbin/rpi-set-sysconf"
+      install -m 644 -o root -g root rootfs/etc/systemd/system/rpi-set-sysconf.service "${ROOT?}/etc/systemd/system/"
+      install -m 644 -o root -g root rootfs/boot/firmware/sysconf.txt "${ROOT?}/boot/firmware/sysconf.txt"
+      mkdir -p "${ROOT?}/etc/systemd/system/basic.target.requires/"
+      ln -s /etc/systemd/system/rpi-set-sysconf.service "${ROOT?}/etc/systemd/system/basic.target.requires/rpi-set-sysconf.service"
+
+      # Resize script is now in the initrd for first boot; no need to ship it.
+      rm -f "${ROOT?}/etc/initramfs-tools/hooks/rpi-resizerootfs"
+      rm -f "${ROOT?}/etc/initramfs-tools/scripts/local-bottom/rpi-resizerootfs"
+
+      install -m 644 -o root -g root rootfs/etc/systemd/system/rpi-reconfigure-raspi-firmware.service "${ROOT?}/etc/systemd/system/"
+      mkdir -p "${ROOT?}/etc/systemd/system/multi-user.target.requires/"
+      ln -s /etc/systemd/system/rpi-reconfigure-raspi-firmware.service "${ROOT?}/etc/systemd/system/multi-user.target.requires/rpi-reconfigure-raspi-firmware.service"
+
+      install -m 644 -o root -g root rootfs/etc/systemd/system/rpi-generate-ssh-host-keys.service "${ROOT?}/etc/systemd/system/"
+      ln -s /etc/systemd/system/rpi-generate-ssh-host-keys.service "${ROOT?}/etc/systemd/system/multi-user.target.requires/rpi-generate-ssh-host-keys.service"
+      rm -f "${ROOT?}"/etc/ssh/ssh_host_*_key*
+
+
+    root-fs: tag-root
+
+  # Copy the relevant device tree files to the boot partition
+  - chroot: tag-root
+    shell: |
+      install -m 644 -o root -g root /usr/lib/linux-image-*-arm64/broadcom/bcm*rpi*.dtb /boot/firmware/
+
+  # Clean up archive cache (likely not useful) and lists (likely outdated) to
+  # reduce image size by several hundred megabytes.
+  - chroot: tag-root
+    shell: |
+      apt-get clean
+      rm -rf /var/lib/apt/lists
+
+  # Modify the kernel commandline we take from the firmware to boot from
+  # the partition labeled raspiroot instead of forcing it to mmcblk0p2.
+  # Also insert the serial console right before the root= parameter.
+  #
+  # These changes will be overwritten after the hardware is probed
+  # after dpkg reconfigures raspi-firmware (upon first boot), so make
+  # sure we don't lose label-based booting.
+  - chroot: tag-root
+    shell: |
+      sed -i 's/root=/console=ttyS1,115200 root=/' /boot/firmware/cmdline.txt
+      sed -i 's#root=/dev/mmcblk0p2#root=LABEL=RASPIROOT#' /boot/firmware/cmdline.txt
+      sed -i 's/^#ROOTPART=.*/ROOTPART=LABEL=RASPIROOT/' /etc/default/raspi*-firmware
+
+      sed -i 's/cma=64M //' /boot/firmware/cmdline.txt
+
+  # TODO(https://github.com/larswirzenius/vmdb2/issues/24): remove once vmdb
+  # clears /etc/resolv.conf on its own.
+  - shell: |
+      rm "${ROOT?}/etc/resolv.conf"
+    root-fs: tag-root
+
+  # Clear /etc/machine-id and /var/lib/dbus/machine-id, as both should
+  # be auto-generated upon first boot. From the manpage
+  # (machine-id(5)):
+  #
+  #   For normal operating system installations, where a custom image is
+  #   created for a specific machine, /etc/machine-id should be
+  #   populated during installation.
+  #
+  # Note this will also trigger ConditionFirstBoot=yes for systemd.
+  # On Buster, /etc/machine-id should be an emtpy file, not an absent file
+  # On Bullseye, /etc/machine-id should not exist in an image
+  - chroot: tag-root
+    shell: |
+      rm -f /etc/machine-id /var/lib/dbus/machine-id
+      echo "uninitialized" > /etc/machine-id
+
+  # Create /etc/raspi-image-id to know, from what commit the image was built
+  - chroot: tag-root
+    shell: |
+      echo "image based on revision: ff7fdbf (Switch from qemu-debootstrap to debootstrap., 2024-01-01) and build on 2025-04-13 09:10 (UTC)" > "/etc/raspi-image-id"
+
+
+  # Soundcan specifics
+  - chroot: tag-root
+    shell: |
+      echo "LANG=en_US.UTF-8" >> /etc/default/locale
+      echo "Europe/Stockholm" > /etc/timezone
+      rm -f /etc/localtime
+      ln -s /usr/share/zoneinfo/`cat /etc/timezone` /etc/localtime
+      /sbin/adduser --disabled-password --comment "" soundcan
+      /sbin/adduser soundcan sudo
+      /sbin/adduser soundcan audio
+      /sbin/adduser soundcan pipewire
+      echo "soundcan:soundcan"|/sbin/chpasswd
+      echo "export WAYLAND_DISPLAY=wayland-0" >> /home/soundcan/.profile
+      mkdir -p /var/lib/systemd/linger/
+      touch /var/lib/systemd/linger/soundcan
+
+  - shell: |
+      mkdir -p "${ROOT?}/home/soundcan/.config/systemd/user/"
+      mkdir -p "${ROOT?}/home/soundcan/.config/systemd/user/default.target.wants/"
+      install -m 644 -o root -g root units/labwc.service  "${ROOT?}/home/soundcan/.config/systemd/user/"
+      install -m 644 -o root -g root units/wayvnc.service  "${ROOT?}/home/soundcan/.config/systemd/user/"
+      install -m 644 -o root -g root units/qpwgraph.service  "${ROOT?}/home/soundcan/.config/systemd/user/"
+      install -m 644 -o root -g root units/setbfree.service  "${ROOT?}/home/soundcan/.config/systemd/user/"
+      ln -s "${ROOT?}/home/soundcan/.config/systemd/user/labwc.service" "${ROOT?}/home/soundcan/.config/systemd/user/default.target.wants/labwc.service"
+      ln -s "${ROOT?}/home/soundcan/.config/systemd/user/wayvnc.service" "${ROOT?}/home/soundcan/.config/systemd/user/default.target.wants/wayvnc.service"
+      ln -s "${ROOT?}/home/soundcan/.config/systemd/user/qpwgraph.service" "${ROOT?}/home/soundcan/.config/systemd/user/default.target.wants/qpwgraph.service"
+      ln -s "${ROOT?}/home/soundcan/.config/systemd/user/setbfree.service" "${ROOT?}/home/soundcan/.config/systemd/user/default.target.wants/setbfree.service"
+      chown -R 1000:1000 "${ROOT?}/home/soundcan/.config/systemd/user/"
+    root-fs: tag-root

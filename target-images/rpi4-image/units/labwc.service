@@ -1,0 +1,9 @@
+[Unit]
+Description=labwc Wayland compositor
+
+[Service]
+Environment=WLR_BACKENDS=headless
+ExecStart=/usr/bin/labwc -s foot
+
+[Install]
+WantedBy=default.target
